@@ -1,4 +1,10 @@
 from fastapi import FastAPI
+from app.database.database import engine, Base
+
+from app.models import user
+from app.routers import users
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Bookies API",
@@ -19,3 +25,5 @@ def health_check():
     return {
         "status": "healthy"
     }
+
+app.include_router(users.router)
