@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 
 app = FastAPI(
-    title="Bookies",
-    description="Backend API for the Bookies Club Tracker",
+    title="Bookies API",
+    description="Backend API for managing book clubs",
     version="0.1.0"
 )
 
@@ -10,5 +10,12 @@ app = FastAPI(
 @app.get("/")
 def home():
     return {
-        "message": "Bookies Club API is running!"
+        "message": "Welcome to Bookies!",
+        "status": "API is running"
+    }
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy"
     }
