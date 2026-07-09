@@ -5,24 +5,44 @@ book club application that allows for group creation, reading status updates, mo
 
 A web application for managing book clubs.
 
-## Features (planned)
+## Features (curret)
+- FastAPI backend
+- SQLite database
+- User registration
+- Secure password hashing
 
-- User accounts
+## Features (planned)
+- User authentication
 - Create/join book clubs
-- Monthly book tracking
+- Monthly reading tracking
 - Book suggestions
 - Voting system
+- Google OAuth login
+- Reading history
+- Book discussions
 
 ## Tech Stack
 
 Backend:
 - FastAPI
 - Python
+- SQLAlchemy
+- SQLite
 
 Frontend:
-- React
+- React (planned)   
 - TypeScript
 
 Database:
 - SQLite (development)
 - PostgreSQL (production)
+
+## Local Development
+
+### Backend
+
+Create environment:
+
+```bash
+python -m venv venv
+```
