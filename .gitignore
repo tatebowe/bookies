@@ -11,3 +11,32 @@ node_modules/
 
 # Database
 *.db
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Test output
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Ruff
+.ruff_cache/
+
+# Environment
+.env
+
+# Database
+*.db
+
+# IDE
+.vscode/
