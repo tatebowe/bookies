@@ -35,3 +35,8 @@ class Club(Base):
         DateTime(timezone=True),
         server_default=func.now(),
     )
+
+    suggestions = relationship(
+        "BookSuggestion",
+        back_populates="club",
+    )
