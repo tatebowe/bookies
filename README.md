@@ -10,10 +10,10 @@ A web application for managing book clubs.
 - SQLite database
 - User registration
 - Secure password hashing
-
-## Features (planned)
 - User authentication
 - Create/join book clubs
+
+## Features (planned)
 - Monthly reading tracking
 - Book suggestions
 - Voting system
@@ -30,7 +30,7 @@ Backend:
 - SQLite
 
 Frontend:
-- React (planned)   
+- React Router (planned)   
 - TypeScript
 
 Database:

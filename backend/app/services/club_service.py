@@ -1,5 +1,10 @@
 from sqlalchemy.orm import Session
 
+from app.exceptions.club_exceptions import (
+    AlreadyMemberError,
+    ClubAlreadyExistsError,
+    ClubNotFoundError,
+)
 from app.models.club import Club
 from app.models.membership import ClubMembership
 from app.models.user import User
@@ -19,6 +24,11 @@ def create_club(
         name=club.name,
         description=club.description,
     )
+
+    existing = db.query(Club).filter(Club.name == club.name).first()
+
+    if existing:
+        raise ClubAlreadyExistsError("Club name already exists")
 
     db.add(new_club)
     db.commit()
@@ -57,9 +67,25 @@ def add_member_to_club(
     club_id: int,
     user_id: int,
 ):
-    """
-    Add a user to a club.
-    """
+    club = get_club_by_id(
+        db,
+        club_id,
+    )
+
+    if club is None:
+        raise ClubNotFoundError("Club not found")
+
+    existing_member = (
+        db.query(ClubMembership)
+        .filter(
+            ClubMembership.club_id == club_id,
+            ClubMembership.user_id == user_id,
+        )
+        .first()
+    )
+
+    if existing_member:
+        raise AlreadyMemberError("User is already a member of this club")
 
     membership = ClubMembership(
         club_id=club_id,
@@ -88,3 +114,19 @@ def get_club_members(
         .filter(ClubMembership.club_id == club_id)
         .all()
     )
+
+
+def get_club_by_id(
+    db: Session,
+    club_id: int,
+) -> Club:
+
+    club = db.get(
+        Club,
+        club_id,
+    )
+
+    if club is None:
+        raise ClubNotFoundError("Club not found")
+
+    return club
