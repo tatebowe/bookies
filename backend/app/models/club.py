@@ -40,3 +40,14 @@ class Club(Base):
         "BookSuggestion",
         back_populates="club",
     )
+
+    max_votes_per_user = Column(
+        Integer,
+        default=1,
+        nullable=False,
+    )
+
+    voting_cycles = relationship(
+        "VotingCycle",
+        back_populates="club",
+    )

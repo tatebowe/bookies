@@ -4,6 +4,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    String,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -11,8 +12,8 @@ from sqlalchemy.sql import func
 from app.database.database import Base
 
 
-class BookSuggestion(Base):
-    __tablename__ = "book_suggestions"
+class VotingCycle(Base):
+    __tablename__ = "voting_cycles"
 
     id = Column(
         Integer,
@@ -26,19 +27,22 @@ class BookSuggestion(Base):
         nullable=False,
     )
 
-    book_id = Column(
-        Integer,
-        ForeignKey("books.id"),
+    name = Column(
+        String,
+        nullable=True,
+    )
+
+    start_date = Column(
+        DateTime(timezone=True),
         nullable=False,
     )
 
-    suggested_by_user_id = Column(
-        Integer,
-        ForeignKey("users.id"),
+    end_date = Column(
+        DateTime(timezone=True),
         nullable=False,
     )
 
-    anonymous = Column(
+    active = Column(
         Boolean,
         default=True,
         nullable=False,
@@ -51,28 +55,5 @@ class BookSuggestion(Base):
 
     club = relationship(
         "Club",
-        back_populates="suggestions",
-    )
-
-    book = relationship(
-        "Book",
-    )
-
-    suggested_by = relationship(
-        "User",
-    )
-
-    votes = relationship(
-        "BookVote",
-        back_populates="suggestion",
-    )
-
-    cycle_id = Column(
-        Integer,
-        ForeignKey("voting_cycles.id"),
-        nullable=False,
-    )
-
-    cycle = relationship(
-        "VotingCycle",
+        back_populates="voting_cycles",
     )
