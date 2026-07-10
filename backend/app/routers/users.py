@@ -1,34 +1,31 @@
 from app.auth.dependencies import get_current_user
 from app.dependencies import get_db
+from app.exceptions.user_exceptions import UserAlreadyExistsError
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse
-from app.security import hash_password
-from fastapi import APIRouter, Depends
+from app.services.user_service import register_user
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.post("/", response_model=UserResponse)
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
+def create_user(
+    user: UserCreate,
+    db: Session = Depends(get_db),
+):
+    try:
+        return register_user(db, user)
 
-    new_user = User(
-        username=user.username,
-        email=user.email,
-        password_hash=hash_password(user.password),
-    )
-
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    return new_user
+    except UserAlreadyExistsError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        )
 
 
-@router.get(
-    "/me",
-    response_model=UserResponse,
-)
+@router.get("/me", response_model=UserResponse)
 def get_me(
     current_user: User = Depends(get_current_user),
 ):

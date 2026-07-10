@@ -1,17 +1,61 @@
-POST /login
+# Bookies API
 
-POST /register
+## Authentication
 
-GET /clubs
+### POST /auth/login
 
-POST /clubs
+Authenticate a user.
 
-POST /clubs/{id}/join
+#### Request (form)
 
-GET /current-book
+| Field | Type | Required |
+|------|------|----------|
+| username | string | Yes |
+| password | string | Yes |
 
-POST /reading-status
+#### Response
 
-GET /vote
+```json
+{
+  "access_token": "...",
+  "token_type": "bearer"
+}
+```
 
-POST /vote
+---
+
+## Users
+
+### POST /users
+
+Register a new account.
+
+#### Request
+
+```json
+{
+  "username": "tate",
+  "email": "tate@example.com",
+  "password": "BookClub123"
+}
+```
+
+#### Response
+
+```json
+{
+  "id": 1,
+  "username": "tate",
+  "email": "tate@example.com"
+}
+```
+
+---
+
+### GET /users/me
+
+Returns the currently authenticated user.
+
+Requires:
+
+Authorization: Bearer <token>
