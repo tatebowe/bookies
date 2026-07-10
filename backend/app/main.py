@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 import app.models
 from app.database.database import Base, engine
-from app.routers import auth, clubs, users
+from app.routers import auth, books, clubs, users
 
 # Create all database tables
 Base.metadata.create_all(bind=engine)
@@ -32,3 +32,4 @@ def health_check():
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(clubs.router)
+app.include_router(books.router)
