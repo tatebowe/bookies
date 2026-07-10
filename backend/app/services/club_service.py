@@ -9,7 +9,7 @@ from app.models.club import Club
 from app.models.membership import ClubMembership
 from app.models.user import User
 from app.schemas.club import ClubCreate
-from app.services.helpers import get_by_id, save_and_refresh
+from app.services.helpers import exists, get_by_id, save_and_refresh
 
 
 def create_club(
@@ -19,21 +19,27 @@ def create_club(
 ) -> Club:
     """
     Create a new club and add the creator as owner.
+
+    Raises:
+        ClubAlreadyExistsError:
+            If a club with the same name exists.
     """
+
+    if exists(
+        db,
+        Club,
+        name=club.name,
+    ):
+        raise ClubAlreadyExistsError("Club name already exists")
 
     new_club = Club(
         name=club.name,
         description=club.description,
     )
 
-    existing = db.query(Club).filter(Club.name == club.name).first()
-
-    if existing:
-        raise ClubAlreadyExistsError("Club name already exists")
-
-    return save_and_refresh(
+    new_club = save_and_refresh(
         db,
-        club,
+        new_club,
     )
 
     membership = ClubMembership(
@@ -42,8 +48,10 @@ def create_club(
         role="owner",
     )
 
-    db.add(membership)
-    db.commit()
+    save_and_refresh(
+        db,
+        membership,
+    )
 
     return new_club
 
@@ -51,7 +59,7 @@ def create_club(
 def get_clubs_for_user(
     db: Session,
     user_id: int,
-):
+) -> list[Club]:
     """
     Return all clubs a user belongs to.
     """
@@ -59,7 +67,9 @@ def get_clubs_for_user(
     return (
         db.query(Club)
         .join(ClubMembership)
-        .filter(ClubMembership.user_id == user_id)
+        .filter(
+            ClubMembership.user_id == user_id,
+        )
         .all()
     )
 
@@ -68,14 +78,22 @@ def add_member_to_club(
     db: Session,
     club_id: int,
     user_id: int,
-):
-    club = get_club_by_id(
+) -> ClubMembership:
+    """
+    Add a user to a club.
+
+    Raises:
+        ClubNotFoundError:
+            If the club does not exist.
+
+        AlreadyMemberError:
+            If the user is already a member.
+    """
+
+    get_club_by_id(
         db,
         club_id,
     )
-
-    if club is None:
-        raise ClubNotFoundError("Club not found")
 
     existing_member = (
         db.query(ClubMembership)
@@ -104,15 +122,22 @@ def add_member_to_club(
 def get_club_members(
     db: Session,
     club_id: int,
-):
+) -> list[User]:
     """
     Return all users in a club.
     """
 
+    get_club_by_id(
+        db,
+        club_id,
+    )
+
     return (
         db.query(User)
         .join(ClubMembership)
-        .filter(ClubMembership.club_id == club_id)
+        .filter(
+            ClubMembership.club_id == club_id,
+        )
         .all()
     )
 
@@ -120,7 +145,15 @@ def get_club_members(
 def get_club_by_id(
     db: Session,
     club_id: int,
-):
+) -> Club:
+    """
+    Return a club by ID.
+
+    Raises:
+        ClubNotFoundError:
+            If the club does not exist.
+    """
+
     club = get_by_id(
         db,
         Club,

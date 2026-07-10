@@ -4,7 +4,7 @@ from app.exceptions.user_exceptions import UserAlreadyExistsError
 from app.models.user import User
 from app.schemas.user import UserCreate
 from app.security import hash_password, verify_password
-from app.services.helpers import get_by_id, save_and_refresh
+from app.services.helpers import exists, get_by_id, save_and_refresh
 
 
 def register_user(
@@ -19,14 +19,18 @@ def register_user(
             If the username or email already exists.
     """
 
-    existing_username = db.query(User).filter(User.username == user.username).first()
-
-    if existing_username:
+    if exists(
+        db,
+        User,
+        username=user.username,
+    ):
         raise UserAlreadyExistsError("Username already exists")
 
-    existing_email = db.query(User).filter(User.email == user.email).first()
-
-    if existing_email:
+    if exists(
+        db,
+        User,
+        email=user.email,
+    ):
         raise UserAlreadyExistsError("Email already exists")
 
     new_user = User(
@@ -51,7 +55,7 @@ def get_user_by_email(
 def get_user_by_id(
     db: Session,
     user_id: int,
-):
+) -> User | None:
     return get_by_id(
         db,
         User,
@@ -65,7 +69,10 @@ def authenticate_user(
     password: str,
 ) -> User | None:
 
-    user = get_user_by_email(db, email)
+    user = get_user_by_email(
+        db,
+        email,
+    )
 
     if user is None:
         return None
