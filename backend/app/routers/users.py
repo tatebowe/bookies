@@ -1,11 +1,12 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
 from app.auth.dependencies import get_current_user
 from app.dependencies import get_db
 from app.exceptions.user_exceptions import UserAlreadyExistsError
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse
 from app.services.user_service import register_user
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/users", tags=["Users"])
 

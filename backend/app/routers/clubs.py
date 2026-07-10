@@ -1,3 +1,6 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
 from app.auth.dependencies import get_current_user
 from app.dependencies import get_db
 from app.exceptions.club_exceptions import (
@@ -17,8 +20,6 @@ from app.services.club_service import (
     get_club_members,
     get_clubs_for_user,
 )
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 
 router = APIRouter(
     prefix="/clubs",
