@@ -9,6 +9,7 @@ from app.models.club import Club
 from app.models.membership import ClubMembership
 from app.models.user import User
 from app.schemas.club import ClubCreate
+from app.services.helpers import get_by_id, save_and_refresh
 
 
 def create_club(
@@ -30,9 +31,10 @@ def create_club(
     if existing:
         raise ClubAlreadyExistsError("Club name already exists")
 
-    db.add(new_club)
-    db.commit()
-    db.refresh(new_club)
+    return save_and_refresh(
+        db,
+        club,
+    )
 
     membership = ClubMembership(
         user_id=user.id,
@@ -93,11 +95,10 @@ def add_member_to_club(
         role="member",
     )
 
-    db.add(membership)
-    db.commit()
-    db.refresh(membership)
-
-    return membership
+    return save_and_refresh(
+        db,
+        membership,
+    )
 
 
 def get_club_members(
@@ -119,9 +120,9 @@ def get_club_members(
 def get_club_by_id(
     db: Session,
     club_id: int,
-) -> Club:
-
-    club = db.get(
+):
+    club = get_by_id(
+        db,
         Club,
         club_id,
     )
