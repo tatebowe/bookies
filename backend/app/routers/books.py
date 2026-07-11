@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
 from app.schemas.book import (
+    BookCreate,
     BookResponse,
     BookSearchResult,
 )
@@ -36,7 +37,7 @@ def search_for_books(
     response_model=BookResponse,
 )
 def save_book(
-    book: BookSearchResult,
+    book: BookCreate,
     db: Session = Depends(get_db),
 ):
     """
@@ -45,5 +46,5 @@ def save_book(
 
     return create_book(
         db,
-        book,
+        book.google_books_id,
     )

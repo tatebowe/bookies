@@ -33,3 +33,7 @@ class BookSearchResult(BaseModel):
     language: str | None
     categories: str | None
     thumbnail_url: str | None
+
+
+class BookCreate(BaseModel):
+    google_books_id: str

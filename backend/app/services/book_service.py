@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session
 
 from app.integrations.google_books import (
+    get_google_book_by_id,
+)
+from app.integrations.google_books import (
     search_books as google_search_books,
 )
 from app.models.book import Book
@@ -32,24 +35,36 @@ def get_book_by_google_id(
     Find an existing book by Google Books ID.
     """
 
-    return db.query(Book).filter(Book.google_books_id == google_books_id).first()
+    return (
+        db.query(Book)
+        .filter(
+            Book.google_books_id == google_books_id,
+        )
+        .first()
+    )
 
 
 def create_book(
     db: Session,
-    book_data: BookSearchResult,
+    google_books_id: str,
 ) -> Book:
     """
-    Save a book if it does not already exist.
+    Save a Google Book into the global library.
     """
 
     existing_book = get_book_by_google_id(
         db,
-        book_data.google_books_id,
+        google_books_id,
     )
 
     if existing_book:
         return existing_book
+
+    book_data = BookSearchResult(
+        **get_google_book_by_id(
+            google_books_id,
+        )
+    )
 
     new_book = Book(
         google_books_id=book_data.google_books_id,

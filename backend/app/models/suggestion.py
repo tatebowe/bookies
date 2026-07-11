@@ -75,4 +75,5 @@ class BookSuggestion(Base):
 
     cycle = relationship(
         "VotingCycle",
+        back_populates="suggestions",
     )

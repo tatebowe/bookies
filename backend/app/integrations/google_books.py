@@ -43,6 +43,33 @@ def search_books(
     return [parse_book(item) for item in data.get("items", [])]
 
 
+def get_google_book_by_id(
+    google_books_id: str,
+) -> dict:
+    """
+    Retrieve a single book from Google Books by volume ID.
+    """
+
+    url = f"{GOOGLE_BOOKS_URL}/{google_books_id}"
+
+    params = {}
+
+    if settings.google_books_api_key:
+        params["key"] = settings.google_books_api_key
+
+    response = httpx.get(
+        url,
+        params=params,
+        timeout=10,
+    )
+
+    response.raise_for_status()
+
+    return parse_book(
+        response.json(),
+    )
+
+
 def parse_book(
     item: dict,
 ) -> dict:

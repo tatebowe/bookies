@@ -12,11 +12,13 @@ A web application for managing book clubs.
 - Secure password hashing
 - User authentication
 - Create/join book clubs
-
-## Features (planned)
 - Monthly reading tracking
 - Book suggestions
 - Voting system
+
+## Features (planned)
+- Private/Public Book Clubs
+- Book rating/reviews
 - Google OAuth login
 - Reading history
 - Book discussions

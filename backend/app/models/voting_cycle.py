@@ -57,3 +57,18 @@ class VotingCycle(Base):
         "Club",
         back_populates="voting_cycles",
     )
+
+    suggestions = relationship(
+        "BookSuggestion",
+        back_populates="cycle",
+    )
+
+    selected_book_id = Column(
+        Integer,
+        ForeignKey("books.id"),
+        nullable=True,
+    )
+
+    selected_book = relationship(
+        "Book",
+    )
