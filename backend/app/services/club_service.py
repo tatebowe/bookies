@@ -35,6 +35,7 @@ def create_club(
     new_club = Club(
         name=club.name,
         description=club.description,
+        is_public=club.is_public,
     )
 
     new_club = save_and_refresh(

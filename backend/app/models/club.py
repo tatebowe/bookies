@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -24,6 +24,12 @@ class Club(Base):
     description = Column(
         String,
         nullable=True,
+    )
+
+    is_public = Column(
+        Boolean,
+        default=False,
+        nullable=False,
     )
 
     memberships = relationship(
