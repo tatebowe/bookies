@@ -1,12 +1,16 @@
 from datetime import datetime
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.exceptions.voting_cycle_exceptions import (
     ActiveVotingCycleExistsError,
     InvalidVotingCycleError,
     VotingCycleNotFoundError,
+    VotingTieError,
 )
+from app.models.suggestion import BookSuggestion
+from app.models.vote import BookVote
 from app.models.voting_cycle import VotingCycle
 from app.services.helpers import get_by_id, save_and_refresh
 
@@ -98,6 +102,67 @@ def close_voting_cycle(
         cycle_id,
     )
 
+    cycle.active = False
+
+    return save_and_refresh(
+        db,
+        cycle,
+    )
+
+
+def select_winner(
+    db: Session,
+    cycle_id: int,
+) -> VotingCycle:
+    """
+    Select the winning book for a voting cycle.
+
+    Raises:
+        VotingTieError:
+            If multiple books have the same highest vote count.
+    """
+
+    cycle = get_cycle_by_id(
+        db,
+        cycle_id,
+    )
+
+    if not cycle.active:
+        raise InvalidVotingCycleError("Voting cycle is already closed")
+
+    results = (
+        db.query(
+            BookSuggestion.book_id,
+            func.count(BookVote.id).label("vote_count"),
+        )
+        .join(
+            BookVote,
+            BookVote.suggestion_id == BookSuggestion.id,
+            isouter=True,
+        )
+        .filter(
+            BookSuggestion.cycle_id == cycle_id,
+        )
+        .group_by(
+            BookSuggestion.book_id,
+        )
+        .order_by(
+            func.count(BookVote.id).desc(),
+        )
+        .all()
+    )
+
+    if not results:
+        raise InvalidVotingCycleError("No suggestions found")
+
+    highest_votes = results[0].vote_count
+
+    winners = [result for result in results if result.vote_count == highest_votes]
+
+    if len(winners) > 1:
+        raise VotingTieError("Voting resulted in a tie")
+
+    cycle.selected_book_id = winners[0].book_id
     cycle.active = False
 
     return save_and_refresh(

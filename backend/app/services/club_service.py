@@ -36,6 +36,8 @@ def create_club(
         name=club.name,
         description=club.description,
         is_public=club.is_public,
+        max_votes_per_user=club.max_votes_per_user,
+        tie_break_method=club.tie_break_method,
     )
 
     new_club = save_and_refresh(

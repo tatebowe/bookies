@@ -57,3 +57,9 @@ class Club(Base):
         "VotingCycle",
         back_populates="club",
     )
+
+    tie_break_method = Column(
+        String,
+        default="runoff",
+        nullable=False,
+    )

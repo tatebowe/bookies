@@ -1,10 +1,4 @@
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-)
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -13,6 +7,15 @@ from app.database.database import Base
 
 class BookSuggestion(Base):
     __tablename__ = "book_suggestions"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "club_id",
+            "cycle_id",
+            "suggested_by_user_id",
+            name="unique_user_cycle_suggestion",
+        ),
+    )
 
     id = Column(
         Integer,

@@ -14,3 +14,7 @@ class InvalidVotingCycleError(Exception):
     """Raised when a voting cycle date range is invalid."""
 
     pass
+
+
+class VotingTieError(Exception):
+    pass

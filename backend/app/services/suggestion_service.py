@@ -51,7 +51,7 @@ def create_suggestion(
         db.query(BookSuggestion)
         .filter(
             BookSuggestion.club_id == club_id,
-            BookSuggestion.book_id == book_id,
+            BookSuggestion.suggested_by_user_id == user_id,
             BookSuggestion.cycle_id == cycle.id,
         )
         .first()
@@ -59,7 +59,7 @@ def create_suggestion(
 
     if existing:
         raise SuggestionAlreadyExistsError(
-            "This book has already been suggested this cycle"
+            "User has already submitted a suggestion this cycle"
         )
 
     suggestion = BookSuggestion(
