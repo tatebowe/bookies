@@ -18,3 +18,8 @@ class VoteResponse(BaseModel):
     model_config = ConfigDict(
         from_attributes=True,
     )
+
+
+class VoteActionResponse(BaseModel):
+    message: str
+    suggestion_id: int

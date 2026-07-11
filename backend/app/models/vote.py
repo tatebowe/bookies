@@ -59,3 +59,7 @@ class BookVote(Base):
         ForeignKey("voting_cycles.id"),
         nullable=False,
     )
+
+    cycle = relationship(
+        "VotingCycle",
+    )

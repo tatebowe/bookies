@@ -130,3 +130,28 @@ def get_vote_count(
         )
         .count()
     )
+
+
+def remove_vote(
+    db: Session,
+    suggestion_id: int,
+    user_id: int,
+) -> None:
+    """
+    Remove a user's vote from a suggestion.
+    """
+
+    vote = (
+        db.query(BookVote)
+        .filter(
+            BookVote.suggestion_id == suggestion_id,
+            BookVote.user_id == user_id,
+        )
+        .first()
+    )
+
+    if vote is None:
+        raise AlreadyVotedError("Vote does not exist")
+
+    db.delete(vote)
+    db.commit()

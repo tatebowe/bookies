@@ -8,6 +8,7 @@ from app.routers import (
     clubs,
     suggestions,
     users,
+    votes,
     voting_cycles,
 )
 
@@ -42,3 +43,4 @@ app.include_router(clubs.router)
 app.include_router(books.router)
 app.include_router(voting_cycles.router)
 app.include_router(suggestions.router)
+app.include_router(votes.router)
