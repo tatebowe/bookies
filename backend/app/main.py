@@ -4,8 +4,13 @@ from fastapi.responses import JSONResponse
 import app.models
 from app.database.database import Base, engine
 from app.exceptions.suggestion_exceptions import (
+    NotClubMemberError,
     SuggestionAlreadyExistsError,
     SuggestionNotFoundError,
+)
+from app.exceptions.vote_exceptions import (
+    AlreadyVotedError,
+    VoteLimitExceededError,
 )
 from app.exceptions.voting_cycle_exceptions import (
     VotingCycleNotFoundError,
@@ -97,6 +102,45 @@ def health_check():
     return {
         "status": "healthy",
     }
+
+
+@app.exception_handler(AlreadyVotedError)
+def already_voted_handler(
+    request: Request,
+    exc: AlreadyVotedError,
+):
+    return JSONResponse(
+        status_code=409,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(VoteLimitExceededError)
+def vote_limit_handler(
+    request: Request,
+    exc: VoteLimitExceededError,
+):
+    return JSONResponse(
+        status_code=400,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(NotClubMemberError)
+def not_club_member_handler(
+    request: Request,
+    exc: NotClubMemberError,
+):
+    return JSONResponse(
+        status_code=403,
+        content={
+            "detail": str(exc),
+        },
+    )
 
 
 app.include_router(auth.router)
