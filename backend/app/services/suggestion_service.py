@@ -6,31 +6,10 @@ from app.exceptions.suggestion_exceptions import (
     SuggestionNotFoundError,
 )
 from app.models.book import Book
-from app.models.membership import ClubMembership
 from app.models.suggestion import BookSuggestion
+from app.services.club_service import is_club_member
 from app.services.helpers import get_by_id, save_and_refresh
 from app.services.voting_cycle_service import get_active_cycle
-
-
-def verify_club_membership(
-    db: Session,
-    club_id: int,
-    user_id: int,
-) -> bool:
-    """
-    Verify a user belongs to a club.
-    """
-
-    membership = (
-        db.query(ClubMembership)
-        .filter(
-            ClubMembership.club_id == club_id,
-            ClubMembership.user_id == user_id,
-        )
-        .first()
-    )
-
-    return membership is not None
 
 
 def create_suggestion(
@@ -44,7 +23,7 @@ def create_suggestion(
     Create a book suggestion for an active voting cycle.
     """
 
-    if not verify_club_membership(
+    if not is_club_member(
         db,
         club_id,
         user_id,
@@ -100,7 +79,7 @@ def create_suggestion(
 def get_club_suggestions(
     db: Session,
     club_id: int,
-):
+) -> list[BookSuggestion]:
     """
     Get suggestions for the current voting cycle.
     """
@@ -113,7 +92,7 @@ def get_club_suggestions(
     if cycle is None:
         return []
 
-    return (
+    suggestions = (
         db.query(BookSuggestion)
         .filter(
             BookSuggestion.club_id == club_id,
@@ -122,13 +101,18 @@ def get_club_suggestions(
         .all()
     )
 
+    for suggestion in suggestions:
+        suggestion.vote_count = len(suggestion.votes)
+
+    return suggestions
+
 
 def get_suggestion_by_id(
     db: Session,
     suggestion_id: int,
-):
+) -> BookSuggestion:
     """
-    Retrieve a suggestion.
+    Retrieve a suggestion by ID.
     """
 
     suggestion = get_by_id(

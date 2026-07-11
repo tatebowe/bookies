@@ -142,6 +142,26 @@ def get_club_members(
     )
 
 
+def is_club_member(
+    db: Session,
+    club_id: int,
+    user_id: int,
+) -> bool:
+    """
+    Check whether a user belongs to a club.
+    """
+
+    return (
+        db.query(ClubMembership)
+        .filter(
+            ClubMembership.club_id == club_id,
+            ClubMembership.user_id == user_id,
+        )
+        .first()
+        is not None
+    )
+
+
 def get_club_by_id(
     db: Session,
     club_id: int,
@@ -164,23 +184,3 @@ def get_club_by_id(
         raise ClubNotFoundError("Club not found")
 
     return club
-
-
-def is_club_member(
-    db: Session,
-    club_id: int,
-    user_id: int,
-) -> bool:
-    """
-    Return True if the user belongs to the club.
-    """
-
-    return (
-        db.query(ClubMembership)
-        .filter(
-            ClubMembership.club_id == club_id,
-            ClubMembership.user_id == user_id,
-        )
-        .first()
-        is not None
-    )
