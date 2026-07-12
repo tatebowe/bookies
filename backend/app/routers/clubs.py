@@ -1,13 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import get_current_user
 from app.dependencies import get_db
-from app.exceptions.club_exceptions import (
-    AlreadyMemberError,
-    ClubAlreadyExistsError,
-    ClubNotFoundError,
-)
 from app.models.user import User
 from app.schemas.club import (
     ClubCreate,
@@ -15,11 +10,11 @@ from app.schemas.club import (
     ClubResponse,
 )
 from app.services.club_service import (
-    add_member_to_club,
     create_club,
     get_club_members,
     get_clubs_for_user,
 )
+from app.services.join_request_service import request_to_join
 
 router = APIRouter(
     prefix="/clubs",
@@ -36,17 +31,11 @@ def create_new_club(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    try:
-        return create_club(
-            db,
-            club,
-            current_user,
-        )
-    except ClubAlreadyExistsError as exc:
-        raise HTTPException(
-            status_code=400,
-            detail=str(exc),
-        )
+    return create_club(
+        db,
+        club,
+        current_user,
+    )
 
 
 @router.get(
@@ -69,24 +58,11 @@ def join_club(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    try:
-        return add_member_to_club(
-            db,
-            club_id,
-            current_user.id,
-        )
-
-    except ClubNotFoundError as exc:
-        raise HTTPException(
-            status_code=404,
-            detail=str(exc),
-        )
-
-    except AlreadyMemberError as exc:
-        raise HTTPException(
-            status_code=400,
-            detail=str(exc),
-        )
+    return request_to_join(
+        db,
+        club_id,
+        current_user.id,
+    )
 
 
 @router.get(

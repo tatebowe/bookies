@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_user
 from app.dependencies import get_db
+from app.models.user import User
 from app.schemas.voting_cycle import (
     VotingCycleCreate,
     VotingCycleResponse,
@@ -27,6 +29,7 @@ def create_cycle(
     club_id: int,
     cycle: VotingCycleCreate,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
     return create_voting_cycle(
         db,
@@ -34,6 +37,7 @@ def create_cycle(
         start_date=cycle.start_date,
         end_date=cycle.end_date,
         name=cycle.name,
+        user_id=user.id,
     )
 
 
@@ -58,10 +62,12 @@ def get_current_cycle(
 def close_cycle(
     cycle_id: int,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
     return close_voting_cycle(
         db,
         cycle_id,
+        user.id,
     )
 
 
@@ -72,8 +78,10 @@ def close_cycle(
 def choose_winner(
     cycle_id: int,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
     return select_winner(
         db,
         cycle_id,
+        user.id,
     )

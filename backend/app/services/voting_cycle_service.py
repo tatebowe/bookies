@@ -13,6 +13,7 @@ from app.models.suggestion import BookSuggestion
 from app.models.vote import BookVote
 from app.models.voting_cycle import VotingCycle
 from app.services.helpers import get_by_id, save_and_refresh
+from app.services.permission_service import require_club_admin
 
 
 def get_active_cycle(
@@ -38,11 +39,21 @@ def create_voting_cycle(
     club_id: int,
     start_date: datetime,
     end_date: datetime,
+    user_id: int,
     name: str | None = None,
 ) -> VotingCycle:
     """
     Create a voting cycle for a club.
+
+    Requires:
+        User must be an admin or owner of the club.
     """
+
+    require_club_admin(
+        db,
+        club_id,
+        user_id,
+    )
 
     if start_date >= end_date:
         raise InvalidVotingCycleError("Start date must be before end date")
@@ -74,7 +85,11 @@ def get_cycle_by_id(
     cycle_id: int,
 ) -> VotingCycle:
     """
-    Retrieve a voting cycle.
+    Retrieve a voting cycle by ID.
+
+    Raises:
+        VotingCycleNotFoundError:
+            If the cycle does not exist.
     """
 
     cycle = get_by_id(
@@ -92,14 +107,24 @@ def get_cycle_by_id(
 def close_voting_cycle(
     db: Session,
     cycle_id: int,
+    user_id: int,
 ) -> VotingCycle:
     """
-    Close an active voting cycle.
+    Close a voting cycle.
+
+    Requires:
+        User must be an admin or owner of the club.
     """
 
     cycle = get_cycle_by_id(
         db,
         cycle_id,
+    )
+
+    require_club_admin(
+        db,
+        cycle.club_id,
+        user_id,
     )
 
     cycle.active = False
@@ -113,6 +138,7 @@ def close_voting_cycle(
 def select_winner(
     db: Session,
     cycle_id: int,
+    user_id: int,
 ) -> VotingCycle:
     """
     Select the winning book for a voting cycle.
@@ -125,6 +151,12 @@ def select_winner(
     cycle = get_cycle_by_id(
         db,
         cycle_id,
+    )
+
+    require_club_admin(
+        db,
+        cycle.club_id,
+        user_id,
     )
 
     if not cycle.active:

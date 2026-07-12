@@ -63,3 +63,14 @@ class Club(Base):
         default="runoff",
         nullable=False,
     )
+
+    join_policy = Column(
+        String,
+        default="request",
+        nullable=False,
+    )
+
+    join_requests = relationship(
+        "ClubJoinRequest",
+        back_populates="club",
+    )

@@ -1,14 +1,13 @@
 from sqlalchemy.orm import Session
 
 from app.exceptions.suggestion_exceptions import (
-    NotClubMemberError,
     SuggestionAlreadyExistsError,
     SuggestionNotFoundError,
 )
 from app.models.book import Book
 from app.models.suggestion import BookSuggestion
-from app.services.club_service import is_club_member
 from app.services.helpers import get_by_id, save_and_refresh
+from app.services.permission_service import require_club_member
 from app.services.voting_cycle_service import get_active_cycle
 
 
@@ -23,12 +22,11 @@ def create_suggestion(
     Create a book suggestion for an active voting cycle.
     """
 
-    if not is_club_member(
+    require_club_member(
         db,
         club_id,
         user_id,
-    ):
-        raise NotClubMemberError("User is not a member of this club")
+    )
 
     cycle = get_active_cycle(
         db,
@@ -47,7 +45,8 @@ def create_suggestion(
     if book is None:
         raise SuggestionNotFoundError("Book not found")
 
-    existing = (
+    # One suggestion per user per cycle
+    existing_user = (
         db.query(BookSuggestion)
         .filter(
             BookSuggestion.club_id == club_id,
@@ -57,9 +56,25 @@ def create_suggestion(
         .first()
     )
 
-    if existing:
+    if existing_user:
         raise SuggestionAlreadyExistsError(
             "User has already submitted a suggestion this cycle"
+        )
+
+    # One instance of each book per cycle
+    existing_book = (
+        db.query(BookSuggestion)
+        .filter(
+            BookSuggestion.club_id == club_id,
+            BookSuggestion.book_id == book_id,
+            BookSuggestion.cycle_id == cycle.id,
+        )
+        .first()
+    )
+
+    if existing_book:
+        raise SuggestionAlreadyExistsError(
+            "This book has already been suggested this cycle"
         )
 
     suggestion = BookSuggestion(
@@ -102,7 +117,9 @@ def get_club_suggestions(
     )
 
     for suggestion in suggestions:
-        suggestion.vote_count = len(suggestion.votes)
+        suggestion.vote_count = len(
+            suggestion.votes,
+        )
 
     return suggestions
 

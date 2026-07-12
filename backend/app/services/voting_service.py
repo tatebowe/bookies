@@ -1,18 +1,13 @@
 from sqlalchemy.orm import Session
 
-from app.exceptions.suggestion_exceptions import (
-    NotClubMemberError,
-)
 from app.exceptions.vote_exceptions import (
     AlreadyVotedError,
     VoteLimitExceededError,
 )
 from app.models.vote import BookVote
-from app.services.club_service import (
-    get_club_by_id,
-    is_club_member,
-)
+from app.services.club_service import get_club_by_id
 from app.services.helpers import save_and_refresh
+from app.services.permission_service import require_club_member
 from app.services.suggestion_service import (
     get_suggestion_by_id,
 )
@@ -74,12 +69,11 @@ def cast_vote(
         suggestion_id,
     )
 
-    if not is_club_member(
+    require_club_member(
         db,
         suggestion.club_id,
         user_id,
-    ):
-        raise NotClubMemberError("User is not a member of this club")
+    )
 
     if has_user_voted(
         db,

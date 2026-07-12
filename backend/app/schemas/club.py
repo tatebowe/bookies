@@ -17,6 +17,8 @@ class ClubCreate(BaseModel):
         "earliest_submission",
     ] = "runoff"
 
+    join_policy: str = "request"
+
 
 class ClubResponse(BaseModel):
     id: int
@@ -34,6 +36,8 @@ class ClubResponse(BaseModel):
     model_config = ConfigDict(
         from_attributes=True,
     )
+
+    join_policy: str
 
 
 class ClubMemberResponse(BaseModel):

@@ -43,3 +43,9 @@ class User(Base):
         "ClubMembership",
         back_populates="user",
     )
+
+    join_requests = relationship(
+        "ClubJoinRequest",
+        foreign_keys="ClubJoinRequest.user_id",
+        back_populates="user",
+    )
