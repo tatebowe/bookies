@@ -16,6 +16,7 @@ class VotingCycleResponse(BaseModel):
     start_date: datetime
     end_date: datetime
     active: bool
+    phase: str
     selected_book_id: int | None
     created_at: datetime
 

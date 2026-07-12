@@ -12,6 +12,7 @@ from app.exceptions.voting_cycle_exceptions import (
 from app.models.suggestion import BookSuggestion
 from app.models.vote import BookVote
 from app.models.voting_cycle import VotingCycle
+from app.services.club_reading_service import create_readings_for_cycle
 from app.services.helpers import get_by_id, save_and_refresh
 from app.services.permission_service import require_club_admin
 
@@ -72,6 +73,7 @@ def create_voting_cycle(
         start_date=start_date,
         end_date=end_date,
         active=True,
+        phase="suggestion",
     )
 
     return save_and_refresh(
@@ -159,8 +161,10 @@ def select_winner(
         user_id,
     )
 
-    if not cycle.active:
-        raise InvalidVotingCycleError("Voting cycle is already closed")
+    if cycle.phase != "voting":
+        raise InvalidVotingCycleError(
+            "Winner can only be selected during the voting phase"
+        )
 
     results = (
         db.query(
@@ -195,7 +199,42 @@ def select_winner(
         raise VotingTieError("Voting resulted in a tie")
 
     cycle.selected_book_id = winners[0].book_id
-    cycle.active = False
+    cycle.phase = "reading"
+
+    create_readings_for_cycle(
+        db,
+        cycle.club_id,
+        cycle.id,
+        cycle.selected_book_id,
+    )
+
+    return save_and_refresh(
+        db,
+        cycle,
+    )
+
+
+def open_voting_phase(
+    db: Session,
+    cycle_id: int,
+    user_id: int,
+) -> VotingCycle:
+
+    cycle = get_cycle_by_id(
+        db,
+        cycle_id,
+    )
+
+    require_club_admin(
+        db,
+        cycle.club_id,
+        user_id,
+    )
+
+    if cycle.phase != "suggestion":
+        raise InvalidVotingCycleError("Cycle is not in suggestion phase")
+
+    cycle.phase = "voting"
 
     return save_and_refresh(
         db,

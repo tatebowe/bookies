@@ -4,6 +4,9 @@ from fastapi.responses import JSONResponse
 import app.models
 from app.database.database import Base, engine
 from app.exceptions.club_exceptions import ClubAlreadyExistsError
+from app.exceptions.cycle_phase_exceptions import (
+    InvalidCyclePhaseError,
+)
 from app.exceptions.join_request_exceptions import (
     InvalidJoinRequestError,
     JoinRequestAlreadyExistsError,
@@ -31,6 +34,7 @@ from app.exceptions.voting_cycle_exceptions import (
 from app.routers import (
     auth,
     books,
+    club_readings,
     clubs,
     join_requests,
     suggestions,
@@ -75,6 +79,19 @@ def suggestion_exists_handler(
 ):
     return JSONResponse(
         status_code=409,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(InvalidCyclePhaseError)
+def invalid_cycle_phase_handler(
+    request: Request,
+    exc: InvalidCyclePhaseError,
+):
+    return JSONResponse(
+        status_code=400,
         content={
             "detail": str(exc),
         },
@@ -283,3 +300,4 @@ app.include_router(voting_cycles.router)
 app.include_router(suggestions.router)
 app.include_router(votes.router)
 app.include_router(join_requests.router)
+app.include_router(club_readings.router)

@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from app.exceptions.cycle_phase_exceptions import InvalidCyclePhaseError
 from app.exceptions.vote_exceptions import (
     AlreadyVotedError,
     VoteLimitExceededError,
@@ -68,6 +69,9 @@ def cast_vote(
         db,
         suggestion_id,
     )
+
+    if suggestion.cycle.phase != "voting":
+        raise InvalidCyclePhaseError("Voting is not currently open")
 
     require_club_member(
         db,

@@ -1,0 +1,2 @@
+class InvalidCyclePhaseError(Exception):
+    pass

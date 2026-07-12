@@ -14,8 +14,9 @@ A web application for managing book clubs.
 - Create/join book clubs
 - Monthly reading tracking
 - Book suggestions
-- Voting system
+- Voting and Suggestion systems
 - Private/Public Book Clubs
+- Reading Status
 
 ## Features (planned)
 - Book rating/reviews

@@ -14,7 +14,6 @@ from app.services.club_service import (
     get_club_members,
     get_clubs_for_user,
 )
-from app.services.join_request_service import request_to_join
 
 router = APIRouter(
     prefix="/clubs",
@@ -48,19 +47,6 @@ def get_my_clubs(
 ):
     return get_clubs_for_user(
         db,
-        current_user.id,
-    )
-
-
-@router.post("/{club_id}/join")
-def join_club(
-    club_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    return request_to_join(
-        db,
-        club_id,
         current_user.id,
     )
 

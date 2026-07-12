@@ -1,5 +1,8 @@
 from sqlalchemy.orm import Session
 
+from app.exceptions.cycle_phase_exceptions import (
+    InvalidCyclePhaseError,
+)
 from app.exceptions.suggestion_exceptions import (
     SuggestionAlreadyExistsError,
     SuggestionNotFoundError,
@@ -32,6 +35,9 @@ def create_suggestion(
         db,
         club_id,
     )
+
+    if cycle.phase != "suggestion":
+        raise InvalidCyclePhaseError("Suggestions are currently closed")
 
     if cycle is None:
         raise SuggestionNotFoundError("No active voting cycle exists")
