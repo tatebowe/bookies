@@ -2,9 +2,18 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
+from app.exceptions.club_reading_exceptions import (
+    InvalidReadingStatusError,
+)
 from app.models.club_reading import ClubReading
 from app.models.membership import ClubMembership
 from app.services.helpers import get_by_id, save_and_refresh
+
+VALID_STATUSES = {
+    "not_started",
+    "reading",
+    "completed",
+}
 
 
 def create_readings_for_cycle(
@@ -71,6 +80,9 @@ def update_reading_status(
     Update reading status.
     """
 
+    if status not in VALID_STATUSES:
+        raise InvalidReadingStatusError("Invalid reading status")
+
     reading.status = status
 
     if status == "reading" and reading.started_at is None:
@@ -91,15 +103,14 @@ def update_reading_review(
     rating: float | None,
     review: str | None,
 ) -> ClubReading:
-    """
-    Add rating and review.
-    """
 
-    if rating is not None:
-        reading.rating = rating
+    if reading.status != "completed":
+        raise InvalidReadingStatusError(
+            "A review can only be added after completing the book"
+        )
 
-    if review is not None:
-        reading.review = review
+    reading.rating = rating
+    reading.review = review
 
     return save_and_refresh(
         db,

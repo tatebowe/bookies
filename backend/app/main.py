@@ -4,6 +4,9 @@ from fastapi.responses import JSONResponse
 import app.models
 from app.database.database import Base, engine
 from app.exceptions.club_exceptions import ClubAlreadyExistsError
+from app.exceptions.club_reading_exceptions import (
+    InvalidReadingStatusError,
+)
 from app.exceptions.cycle_phase_exceptions import (
     InvalidCyclePhaseError,
 )
@@ -278,6 +281,19 @@ def join_request_not_found_handler(
 def invalid_join_request_handler(
     request: Request,
     exc: InvalidJoinRequestError,
+):
+    return JSONResponse(
+        status_code=400,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(InvalidReadingStatusError)
+def invalid_reading_status_handler(
+    request: Request,
+    exc: InvalidReadingStatusError,
 ):
     return JSONResponse(
         status_code=400,
