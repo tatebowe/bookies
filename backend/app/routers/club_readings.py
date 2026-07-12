@@ -16,7 +16,7 @@ from app.services.club_reading_service import (
 )
 
 router = APIRouter(
-    prefix="/readings",
+    prefix="/clubs",
     tags=["Club Readings"],
 )
 

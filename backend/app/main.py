@@ -10,6 +10,10 @@ from app.exceptions.club_reading_exceptions import (
 from app.exceptions.cycle_phase_exceptions import (
     InvalidCyclePhaseError,
 )
+from app.exceptions.discussion_note_exceptions import (
+    DiscussionNoteNotFoundError,
+    UnauthorizedDiscussionNoteError,
+)
 from app.exceptions.join_request_exceptions import (
     InvalidJoinRequestError,
     JoinRequestAlreadyExistsError,
@@ -39,6 +43,7 @@ from app.routers import (
     books,
     club_readings,
     clubs,
+    discussion_notes,
     join_requests,
     suggestions,
     users,
@@ -303,6 +308,32 @@ def invalid_reading_status_handler(
     )
 
 
+@app.exception_handler(DiscussionNoteNotFoundError)
+def discussion_note_not_found_handler(
+    request: Request,
+    exc: DiscussionNoteNotFoundError,
+):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(UnauthorizedDiscussionNoteError)
+def unauthorized_discussion_note_handler(
+    request: Request,
+    exc: UnauthorizedDiscussionNoteError,
+):
+    return JSONResponse(
+        status_code=403,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
 # -------------------------
 # API Routers
 # -------------------------
@@ -317,3 +348,4 @@ app.include_router(suggestions.router)
 app.include_router(votes.router)
 app.include_router(join_requests.router)
 app.include_router(club_readings.router)
+app.include_router(discussion_notes.router)

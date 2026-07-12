@@ -92,3 +92,9 @@ class ClubReading(Base):
     user = relationship(
         "User",
     )
+
+    discussion_notes = relationship(
+        "DiscussionNote",
+        back_populates="club_reading",
+        cascade="all, delete-orphan",
+    )
