@@ -49,3 +49,8 @@ class User(Base):
         foreign_keys="ClubJoinRequest.user_id",
         back_populates="user",
     )
+
+    reading_entries = relationship(
+        "ReadingEntry",
+        back_populates="user",
+    )

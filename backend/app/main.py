@@ -23,6 +23,11 @@ from app.exceptions.permission_exceptions import (
     NotClubAdminError,
     NotClubOwnerError,
 )
+from app.exceptions.reading_entry_exceptions import (
+    InvalidReadingEntryStatusError,
+    ReadingEntryNotFoundError,
+    UnauthorizedReadingEntryError,
+)
 from app.exceptions.suggestion_exceptions import (
     NotClubMemberError,
     SuggestionAlreadyExistsError,
@@ -45,6 +50,7 @@ from app.routers import (
     clubs,
     discussion_notes,
     join_requests,
+    reading_entries,
     suggestions,
     users,
     votes,
@@ -334,6 +340,45 @@ def unauthorized_discussion_note_handler(
     )
 
 
+@app.exception_handler(ReadingEntryNotFoundError)
+def reading_entry_not_found_handler(
+    request: Request,
+    exc: ReadingEntryNotFoundError,
+):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(InvalidReadingEntryStatusError)
+def invalid_reading_entry_status_handler(
+    request: Request,
+    exc: InvalidReadingEntryStatusError,
+):
+    return JSONResponse(
+        status_code=400,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(UnauthorizedReadingEntryError)
+def unauthorized_reading_entry_handler(
+    request: Request,
+    exc: UnauthorizedReadingEntryError,
+):
+    return JSONResponse(
+        status_code=403,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
 # -------------------------
 # API Routers
 # -------------------------
@@ -349,3 +394,4 @@ app.include_router(votes.router)
 app.include_router(join_requests.router)
 app.include_router(club_readings.router)
 app.include_router(discussion_notes.router)
+app.include_router(reading_entries.router)
