@@ -50,6 +50,7 @@ from app.exceptions.voting_cycle_exceptions import (
 from app.routers import (
     auth,
     books,
+    club_dashboard,
     club_readings,
     clubs,
     discussion_notes,
@@ -418,6 +419,7 @@ def unauthorized_reading_note_handler(
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(clubs.router)
+app.include_router(club_dashboard.router)
 app.include_router(books.router)
 app.include_router(voting_cycles.router)
 app.include_router(suggestions.router)
