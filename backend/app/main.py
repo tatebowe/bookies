@@ -28,6 +28,10 @@ from app.exceptions.reading_entry_exceptions import (
     ReadingEntryNotFoundError,
     UnauthorizedReadingEntryError,
 )
+from app.exceptions.reading_note_exceptions import (
+    ReadingNoteNotFoundError,
+    UnauthorizedReadingNoteError,
+)
 from app.exceptions.suggestion_exceptions import (
     NotClubMemberError,
     SuggestionAlreadyExistsError,
@@ -51,6 +55,7 @@ from app.routers import (
     discussion_notes,
     join_requests,
     reading_entries,
+    reading_notes,
     suggestions,
     users,
     votes,
@@ -379,6 +384,32 @@ def unauthorized_reading_entry_handler(
     )
 
 
+@app.exception_handler(ReadingNoteNotFoundError)
+def reading_note_not_found_handler(
+    request: Request,
+    exc: ReadingNoteNotFoundError,
+):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(UnauthorizedReadingNoteError)
+def unauthorized_reading_note_handler(
+    request: Request,
+    exc: UnauthorizedReadingNoteError,
+):
+    return JSONResponse(
+        status_code=403,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
 # -------------------------
 # API Routers
 # -------------------------
@@ -395,3 +426,4 @@ app.include_router(join_requests.router)
 app.include_router(club_readings.router)
 app.include_router(discussion_notes.router)
 app.include_router(reading_entries.router)
+app.include_router(reading_notes.router)
