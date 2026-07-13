@@ -1,0 +1,2 @@
+class ClubHistoryNotFoundError(Exception):
+    pass

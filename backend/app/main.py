@@ -4,6 +4,9 @@ from fastapi.responses import JSONResponse
 import app.models
 from app.database.database import Base, engine
 from app.exceptions.club_exceptions import ClubAlreadyExistsError
+from app.exceptions.club_history_exceptions import (
+    ClubHistoryNotFoundError,
+)
 from app.exceptions.club_reading_exceptions import (
     InvalidReadingStatusError,
 )
@@ -51,6 +54,7 @@ from app.routers import (
     auth,
     books,
     club_dashboard,
+    club_history,
     club_readings,
     clubs,
     discussion_notes,
@@ -411,6 +415,19 @@ def unauthorized_reading_note_handler(
     )
 
 
+@app.exception_handler(ClubHistoryNotFoundError)
+def club_history_not_found_handler(
+    request: Request,
+    exc: ClubHistoryNotFoundError,
+):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
 # -------------------------
 # API Routers
 # -------------------------
@@ -420,6 +437,7 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(clubs.router)
 app.include_router(club_dashboard.router)
+app.include_router(club_history.router)
 app.include_router(books.router)
 app.include_router(voting_cycles.router)
 app.include_router(suggestions.router)
