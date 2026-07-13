@@ -75,3 +75,13 @@ class ReadingEntry(Base):
     book = relationship(
         "Book",
     )
+
+    reading_notes = relationship(
+        "ReadingNote",
+        back_populates="reading_entry",
+    )
+
+    club_readings = relationship(
+        "ClubReading",
+        back_populates="reading_entry",
+    )

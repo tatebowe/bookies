@@ -7,6 +7,7 @@ from app.exceptions.club_reading_exceptions import (
 )
 from app.models.club_reading import ClubReading
 from app.models.membership import ClubMembership
+from app.models.reading_entry import ReadingEntry
 from app.services.helpers import get_by_id, save_and_refresh
 
 VALID_STATUSES = {
@@ -24,6 +25,7 @@ def create_readings_for_cycle(
 ) -> list[ClubReading]:
     """
     Create a reading record for every club member.
+    Also creates a personal reading entry linked to each club reading.
     """
 
     members = (
@@ -37,16 +39,26 @@ def create_readings_for_cycle(
     readings = []
 
     for member in members:
-        reading = ClubReading(
+        reading_entry = ReadingEntry(
+            user_id=member.user_id,
+            book_id=book_id,
+            status="not_started",
+        )
+
+        db.add(reading_entry)
+        db.flush()
+
+        club_reading = ClubReading(
             club_id=club_id,
             cycle_id=cycle_id,
             book_id=book_id,
             user_id=member.user_id,
+            reading_entry_id=reading_entry.id,
             status="not_started",
         )
 
-        db.add(reading)
-        readings.append(reading)
+        db.add(club_reading)
+        readings.append(club_reading)
 
     db.commit()
 
@@ -61,7 +73,7 @@ def get_user_reading(
     reading_id: int,
 ) -> ClubReading | None:
     """
-    Retrieve a reading record.
+    Retrieve a club reading record by ID.
     """
 
     return get_by_id(
@@ -77,7 +89,7 @@ def update_reading_status(
     status: str,
 ) -> ClubReading:
     """
-    Update reading status.
+    Update club reading status.
     """
 
     if status not in VALID_STATUSES:
@@ -103,6 +115,11 @@ def update_reading_review(
     rating: float | None,
     review: str | None,
 ) -> ClubReading:
+    """
+    Update club reading rating and review.
+
+    Reviews can only be added after completion.
+    """
 
     if reading.status != "completed":
         raise InvalidReadingStatusError(
@@ -115,4 +132,40 @@ def update_reading_review(
     return save_and_refresh(
         db,
         reading,
+    )
+
+
+def create_reading_for_member(
+    db: Session,
+    club_id: int,
+    cycle_id: int,
+    book_id: int,
+    user_id: int,
+) -> ClubReading:
+    """
+    Create reading records when a single user joins
+    an active book club.
+    """
+
+    reading_entry = ReadingEntry(
+        user_id=user_id,
+        book_id=book_id,
+        status="not_started",
+    )
+
+    db.add(reading_entry)
+    db.flush()
+
+    club_reading = ClubReading(
+        club_id=club_id,
+        cycle_id=cycle_id,
+        book_id=book_id,
+        user_id=user_id,
+        reading_entry_id=reading_entry.id,
+        status="not_started",
+    )
+
+    return save_and_refresh(
+        db,
+        club_reading,
     )

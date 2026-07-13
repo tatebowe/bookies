@@ -54,3 +54,8 @@ class User(Base):
         "ReadingEntry",
         back_populates="user",
     )
+
+    reading_notes = relationship(
+        "ReadingNote",
+        back_populates="user",
+    )

@@ -46,6 +46,12 @@ class ClubReading(Base):
         nullable=False,
     )
 
+    reading_entry_id = Column(
+        Integer,
+        ForeignKey("reading_entries.id"),
+        nullable=False,
+    )
+
     status = Column(
         String,
         default="not_started",
@@ -97,4 +103,15 @@ class ClubReading(Base):
         "DiscussionNote",
         back_populates="club_reading",
         cascade="all, delete-orphan",
+    )
+
+    reading_notes = relationship(
+        "ReadingNote",
+        back_populates="club_reading",
+    )
+
+    reading_entry = relationship(
+        "ReadingEntry",
+        back_populates="club_readings",
+        foreign_keys=[reading_entry_id],
     )
