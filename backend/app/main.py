@@ -62,6 +62,7 @@ from app.routers import (
     club_history,
     club_readings,
     clubs,
+    dashboard,
     discussion_notes,
     join_requests,
     profiles,
@@ -479,6 +480,9 @@ app.include_router(clubs.router)
 app.include_router(club_dashboard.router)
 app.include_router(club_history.router)
 app.include_router(books.router)
+app.include_router(
+    dashboard.router,
+)
 app.include_router(voting_cycles.router)
 app.include_router(suggestions.router)
 app.include_router(votes.router)
