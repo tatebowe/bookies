@@ -32,13 +32,29 @@ class VotingCycle(Base):
         nullable=True,
     )
 
-    start_date = Column(
+    suggestion_start_date = Column(
         DateTime(timezone=True),
         nullable=False,
     )
 
-    end_date = Column(
+    voting_start_date = Column(
         DateTime(timezone=True),
+        nullable=False,
+    )
+
+    voting_end_date = Column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+
+    discussion_date = Column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+
+    phase = Column(
+        String,
+        default="suggestion",
         nullable=False,
     )
 
@@ -48,10 +64,10 @@ class VotingCycle(Base):
         nullable=False,
     )
 
-    phase = Column(
-        String,
-        default="suggestion",
-        nullable=False,
+    selected_book_id = Column(
+        Integer,
+        ForeignKey("books.id"),
+        nullable=True,
     )
 
     created_at = Column(
@@ -67,12 +83,7 @@ class VotingCycle(Base):
     suggestions = relationship(
         "BookSuggestion",
         back_populates="cycle",
-    )
-
-    selected_book_id = Column(
-        Integer,
-        ForeignKey("books.id"),
-        nullable=True,
+        cascade="all, delete-orphan",
     )
 
     selected_book = relationship(

@@ -36,11 +36,11 @@ def create_suggestion(
         club_id,
     )
 
-    if cycle.phase != "suggestion":
-        raise InvalidCyclePhaseError("Suggestions are currently closed")
-
     if cycle is None:
         raise SuggestionNotFoundError("No active voting cycle exists")
+
+    if cycle.phase != "suggestion":
+        raise InvalidCyclePhaseError("Suggestions are currently closed")
 
     book = get_by_id(
         db,

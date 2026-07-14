@@ -35,8 +35,10 @@ def create_cycle(
     return create_voting_cycle(
         db,
         club_id=club_id,
-        start_date=cycle.start_date,
-        end_date=cycle.end_date,
+        suggestion_start_date=cycle.suggestion_start_date,
+        voting_start_date=cycle.voting_start_date,
+        voting_end_date=cycle.voting_end_date,
+        discussion_date=cycle.discussion_date,
         name=cycle.name,
         user_id=user.id,
     )

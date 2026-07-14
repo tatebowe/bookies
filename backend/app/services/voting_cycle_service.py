@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -17,15 +17,51 @@ from app.services.helpers import get_by_id, save_and_refresh
 from app.services.permission_service import require_club_admin
 
 
+def update_cycle_phase(
+    cycle: VotingCycle,
+) -> VotingCycle:
+
+    now = datetime.now(timezone.utc)
+
+    voting_start = cycle.voting_start_date
+    voting_end = cycle.voting_end_date
+    discussion = cycle.discussion_date
+
+    if voting_start.tzinfo is None:
+        voting_start = voting_start.replace(tzinfo=timezone.utc)
+
+    if voting_end.tzinfo is None:
+        voting_end = voting_end.replace(tzinfo=timezone.utc)
+
+    if discussion.tzinfo is None:
+        discussion = discussion.replace(tzinfo=timezone.utc)
+
+    if now < voting_start:
+        cycle.phase = "suggestion"
+
+    elif now < voting_end:
+        cycle.phase = "voting"
+
+    elif now < discussion:
+        cycle.phase = "reading"
+
+    else:
+        cycle.phase = "completed"
+        cycle.active = False
+
+    return cycle
+
+
 def get_active_cycle(
     db: Session,
     club_id: int,
 ) -> VotingCycle | None:
     """
-    Return the currently active voting cycle for a club.
+    Return the currently active voting cycle
+    and update its phase automatically.
     """
 
-    return (
+    cycle = (
         db.query(VotingCycle)
         .filter(
             VotingCycle.club_id == club_id,
@@ -34,20 +70,36 @@ def get_active_cycle(
         .first()
     )
 
+    if cycle is None:
+        return None
+
+    old_phase = cycle.phase
+    old_active = cycle.active
+
+    update_cycle_phase(cycle)
+
+    if cycle.phase != old_phase or cycle.active != old_active:
+        db.commit()
+        db.refresh(cycle)
+
+    return cycle
+
 
 def create_voting_cycle(
     db: Session,
     club_id: int,
-    start_date: datetime,
-    end_date: datetime,
+    suggestion_start_date: datetime,
+    voting_start_date: datetime,
+    voting_end_date: datetime,
+    discussion_date: datetime,
     user_id: int,
     name: str | None = None,
 ) -> VotingCycle:
     """
-    Create a voting cycle for a club.
+    Create a voting cycle.
 
     Requires:
-        User must be an admin or owner of the club.
+        User must be an admin or owner.
     """
 
     require_club_admin(
@@ -56,8 +108,10 @@ def create_voting_cycle(
         user_id,
     )
 
-    if start_date >= end_date:
-        raise InvalidVotingCycleError("Start date must be before end date")
+    if not (
+        suggestion_start_date < voting_start_date < voting_end_date < discussion_date
+    ):
+        raise InvalidVotingCycleError("Cycle dates must be in chronological order")
 
     existing_cycle = get_active_cycle(
         db,
@@ -70,8 +124,10 @@ def create_voting_cycle(
     cycle = VotingCycle(
         club_id=club_id,
         name=name,
-        start_date=start_date,
-        end_date=end_date,
+        suggestion_start_date=suggestion_start_date,
+        voting_start_date=voting_start_date,
+        voting_end_date=voting_end_date,
+        discussion_date=discussion_date,
         active=True,
         phase="suggestion",
     )
@@ -87,11 +143,7 @@ def get_cycle_by_id(
     cycle_id: int,
 ) -> VotingCycle:
     """
-    Retrieve a voting cycle by ID.
-
-    Raises:
-        VotingCycleNotFoundError:
-            If the cycle does not exist.
+    Retrieve a voting cycle.
     """
 
     cycle = get_by_id(
@@ -112,10 +164,7 @@ def close_voting_cycle(
     user_id: int,
 ) -> VotingCycle:
     """
-    Close a voting cycle.
-
-    Requires:
-        User must be an admin or owner of the club.
+    Manually close a cycle.
     """
 
     cycle = get_cycle_by_id(
@@ -130,6 +179,7 @@ def close_voting_cycle(
     )
 
     cycle.active = False
+    cycle.phase = "completed"
 
     return save_and_refresh(
         db,
@@ -143,11 +193,7 @@ def select_winner(
     user_id: int,
 ) -> VotingCycle:
     """
-    Select the winning book for a voting cycle.
-
-    Raises:
-        VotingTieError:
-            If multiple books have the same highest vote count.
+    Select winning book.
     """
 
     cycle = get_cycle_by_id(
@@ -162,9 +208,7 @@ def select_winner(
     )
 
     if cycle.phase != "voting":
-        raise InvalidVotingCycleError(
-            "Winner can only be selected during the voting phase"
-        )
+        raise InvalidVotingCycleError("Winner can only be selected during voting")
 
     results = (
         db.query(
@@ -219,6 +263,10 @@ def open_voting_phase(
     cycle_id: int,
     user_id: int,
 ) -> VotingCycle:
+    """
+    Deprecated:
+    Voting now opens automatically based on voting_start_date.
+    """
 
     cycle = get_cycle_by_id(
         db,
