@@ -27,6 +27,7 @@ from app.exceptions.permission_exceptions import (
     NotClubOwnerError,
 )
 from app.exceptions.reading_entry_exceptions import (
+    DuplicateReadingEntryError,
     InvalidReadingEntryStatusError,
     ReadingEntryNotFoundError,
     UnauthorizedReadingEntryError,
@@ -360,6 +361,14 @@ def reading_entry_not_found_handler(
         content={
             "detail": str(exc),
         },
+    )
+
+
+@app.exception_handler(DuplicateReadingEntryError)
+def duplicate_reading_entry_handler(request, exc):
+    return JSONResponse(
+        status_code=409,
+        content={"detail": str(exc)},
     )
 
 

@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_user
 from app.dependencies import get_db
+from app.models.user import User
 from app.schemas.book import (
     BookCreate,
     BookResponse,
@@ -39,11 +41,8 @@ def search_for_books(
 def save_book(
     book: BookCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    """
-    Save a book to the global book library.
-    """
-
     return create_book(
         db,
         book.google_books_id,

@@ -8,3 +8,7 @@ class InvalidReadingEntryStatusError(Exception):
 
 class UnauthorizedReadingEntryError(Exception):
     pass
+
+
+class DuplicateReadingEntryError(Exception):
+    pass

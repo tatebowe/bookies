@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from app.exceptions.reading_entry_exceptions import (
+    DuplicateReadingEntryError,
     InvalidReadingEntryStatusError,
     ReadingEntryNotFoundError,
     UnauthorizedReadingEntryError,
@@ -25,6 +26,18 @@ def create_reading_entry(
     """
     Add a book to a user's personal library.
     """
+
+    existing = (
+        db.query(ReadingEntry)
+        .filter(
+            ReadingEntry.user_id == user_id,
+            ReadingEntry.book_id == book_id,
+        )
+        .first()
+    )
+
+    if existing:
+        raise DuplicateReadingEntryError("Reading entry already exists")
 
     reading = ReadingEntry(
         user_id=user_id,

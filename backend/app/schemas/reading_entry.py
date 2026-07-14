@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict
 
 class ReadingEntryCreate(BaseModel):
     book_id: int
+    status: str = "not_started"
 
 
 class ReadingEntryStatusUpdate(BaseModel):
