@@ -80,10 +80,21 @@ def get_club_dashboard(
     for reading in readings:
         progress[reading.status] += 1
 
+    memberships = (
+        db.query(ClubMembership)
+        .filter(
+            ClubMembership.club_id == club_id,
+        )
+        .all()
+    )
+
+    members = []
+
+    for membership in memberships:
         members.append(
             {
-                "username": reading.user.username,
-                "status": reading.status,
+                "username": membership.user.username,
+                "role": membership.role,
             }
         )
 
@@ -104,6 +115,13 @@ def get_club_dashboard(
         "current_book": current_book,
         "reading_progress": progress,
         "members": members,
-        "active_cycle": active_cycle,
+        "active_cycle": (
+            {
+                **active_cycle.__dict__,
+                "selected_book": current_book,
+            }
+            if active_cycle
+            else None
+        ),
         "discussion_notes_count": discussion_count,
     }

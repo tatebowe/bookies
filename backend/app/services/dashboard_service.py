@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
 
-from app.models.club_reading import ClubReading
 from app.models.membership import ClubMembership
+from app.models.reading_entry import ReadingEntry
+from app.models.reading_note import ReadingNote
+from app.models.user import User
 from app.models.voting_cycle import VotingCycle
 
 
@@ -9,6 +11,14 @@ def get_user_dashboard(
     db: Session,
     user_id: int,
 ):
+
+    user = (
+        db.query(User)
+        .filter(
+            User.id == user_id,
+        )
+        .first()
+    )
 
     memberships = (
         db.query(ClubMembership)
@@ -36,15 +46,16 @@ def get_user_dashboard(
         clubs.append(
             {
                 "club": club,
+                "role": membership.role,
                 "active_cycle": active_cycle,
             }
         )
 
     current_readings = (
-        db.query(ClubReading)
+        db.query(ReadingEntry)
         .filter(
-            ClubReading.user_id == user_id,
-            ClubReading.status.in_(
+            ReadingEntry.user_id == user_id,
+            ReadingEntry.status.in_(
                 [
                     "reading",
                     "started",
@@ -55,16 +66,26 @@ def get_user_dashboard(
     )
 
     history = (
-        db.query(ClubReading)
+        db.query(ReadingEntry)
         .filter(
-            ClubReading.user_id == user_id,
-            ClubReading.status == "completed",
+            ReadingEntry.user_id == user_id,
+            ReadingEntry.status == "completed",
+        )
+        .all()
+    )
+
+    notes = (
+        db.query(ReadingNote)
+        .filter(
+            ReadingNote.user_id == user_id,
         )
         .all()
     )
 
     return {
-        "current_readings": current_readings,
+        "profile": user,
         "clubs": clubs,
+        "current_readings": current_readings,
         "history": history,
+        "notes": notes,
     }

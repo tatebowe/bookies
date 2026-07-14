@@ -293,7 +293,7 @@ def invalid_credentials_handler(
 @app.get("/")
 def home():
     return {
-        "message": "Welcome to Tome-Tet!",
+        "message": "Welcome to Tomeys!",
         "status": "API is running",
     }
 

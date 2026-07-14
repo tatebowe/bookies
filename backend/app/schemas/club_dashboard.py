@@ -1,22 +1,26 @@
-from pydantic import BaseModel
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict
 
 
-class DashboardClub(BaseModel):
+class ClubDashboardClub(BaseModel):
     id: int
     name: str
     description: str | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
 
 
-class DashboardBook(BaseModel):
+class ClubDashboardBook(BaseModel):
     id: int
     title: str
     authors: str | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
 
 
 class DashboardProgress(BaseModel):
@@ -27,24 +31,39 @@ class DashboardProgress(BaseModel):
 
 class DashboardMember(BaseModel):
     username: str
-    status: str
+    role: str
+
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
 
 
 class DashboardCycle(BaseModel):
     id: int
     phase: str
+    active: bool
+    voting_end_date: datetime | None = None
+    discussion_date: datetime | None = None
+    selected_book: ClubDashboardBook | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
 
 
 class ClubDashboardResponse(BaseModel):
-    club: DashboardClub
-    current_book: DashboardBook | None = None
+    club: ClubDashboardClub
+
+    current_book: ClubDashboardBook | None = None
+
     reading_progress: DashboardProgress
+
     members: list[DashboardMember]
+
     active_cycle: DashboardCycle | None = None
+
     discussion_notes_count: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
