@@ -22,6 +22,11 @@ class User(Base):
         nullable=False,
     )
 
+    display_name = Column(
+        String,
+        nullable=True,
+    )
+
     email = Column(
         String,
         unique=True,

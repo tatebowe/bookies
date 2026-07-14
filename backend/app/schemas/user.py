@@ -5,6 +5,7 @@ class UserCreate(BaseModel):
     username: str
     email: str
     password: str = Field(min_length=8, max_length=72)
+    display_name: str | None = None
 
 
 class UserResponse(BaseModel):
@@ -14,4 +15,5 @@ class UserResponse(BaseModel):
 
     id: int
     username: str
+    display_name: str | None
     email: str
