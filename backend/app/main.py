@@ -41,6 +41,10 @@ from app.exceptions.suggestion_exceptions import (
     SuggestionAlreadyExistsError,
     SuggestionNotFoundError,
 )
+from app.exceptions.user_exceptions import (
+    InvalidCredentialsError,
+    UserNotFoundError,
+)
 from app.exceptions.vote_exceptions import (
     AlreadyVotedError,
     VoteLimitExceededError,
@@ -60,6 +64,7 @@ from app.routers import (
     clubs,
     discussion_notes,
     join_requests,
+    profiles,
     reading_entries,
     reading_notes,
     suggestions,
@@ -247,6 +252,32 @@ def club_already_exists_handler(
 ):
     return JSONResponse(
         status_code=409,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(UserNotFoundError)
+def user_not_found_handler(
+    request: Request,
+    exc: UserNotFoundError,
+):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(InvalidCredentialsError)
+def invalid_credentials_handler(
+    request: Request,
+    exc: InvalidCredentialsError,
+):
+    return JSONResponse(
+        status_code=401,
         content={
             "detail": str(exc),
         },
@@ -454,5 +485,8 @@ app.include_router(votes.router)
 app.include_router(join_requests.router)
 app.include_router(club_readings.router)
 app.include_router(discussion_notes.router)
+app.include_router(
+    profiles.router,
+)
 app.include_router(reading_entries.router)
 app.include_router(reading_notes.router)
