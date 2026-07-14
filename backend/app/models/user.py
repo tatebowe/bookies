@@ -36,7 +36,13 @@ class User(Base):
 
     password_hash = Column(
         String,
-        nullable=False,
+        nullable=True,
+    )
+
+    google_id = Column(
+        String,
+        unique=True,
+        nullable=True,
     )
 
     created_at = Column(

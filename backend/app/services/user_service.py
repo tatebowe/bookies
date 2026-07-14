@@ -50,7 +50,30 @@ def get_user_by_email(
     db: Session,
     email: str,
 ) -> User | None:
-    return db.query(User).filter(User.email == email).first()
+    return (
+        db.query(User)
+        .filter(
+            User.email == email,
+        )
+        .first()
+    )
+
+
+def get_user_by_google_id(
+    db: Session,
+    google_id: str,
+) -> User | None:
+    """
+    Retrieve a user by Google OAuth ID.
+    """
+
+    return (
+        db.query(User)
+        .filter(
+            User.google_id == google_id,
+        )
+        .first()
+    )
 
 
 def get_user_by_id(
@@ -78,6 +101,9 @@ def authenticate_user(
     if user is None:
         return None
 
+    if user.password_hash is None:
+        return None
+
     if not verify_password(
         password,
         user.password_hash,
@@ -87,10 +113,61 @@ def authenticate_user(
     return user
 
 
-# Future user operations:
-#
-# - update_profile()
-# - change_password()
-# - request_password_reset()
-# - delete_user()
-# - deactivate_user()
+def create_google_user(
+    db: Session,
+    google_id: str,
+    email: str,
+    display_name: str | None,
+) -> User:
+    """
+    Create a user from Google OAuth information.
+    """
+
+    existing_email = get_user_by_email(
+        db,
+        email,
+    )
+
+    if existing_email:
+        raise UserAlreadyExistsError("A user with this email already exists")
+
+    new_user = User(
+        username=email.split("@")[0],
+        display_name=display_name,
+        email=email,
+        google_id=google_id,
+        password_hash=None,
+    )
+
+    return save_and_refresh(
+        db,
+        new_user,
+    )
+
+
+def get_or_create_google_user(
+    db: Session,
+    google_user: dict,
+) -> User:
+    """
+    Find an existing Google user or create one.
+    """
+
+    google_id = google_user["sub"]
+    email = google_user["email"]
+    display_name = google_user.get("name")
+
+    user = get_user_by_google_id(
+        db,
+        google_id,
+    )
+
+    if user:
+        return user
+
+    return create_google_user(
+        db,
+        google_id,
+        email,
+        display_name,
+    )
