@@ -32,7 +32,7 @@ def get_club_history(
             VotingCycle.club_id == club_id,
             VotingCycle.selected_book_id.isnot(None),
         )
-        .order_by(VotingCycle.end_date.desc())
+        .order_by(VotingCycle.discussion_date.desc())
         .all()
     )
 
@@ -40,7 +40,13 @@ def get_club_history(
 
     for cycle in cycles:
 
-        book = db.query(Book).filter(Book.id == cycle.selected_book_id).first()
+        book = (
+            db.query(Book)
+            .filter(
+                Book.id == cycle.selected_book_id,
+            )
+            .first()
+        )
 
         progress = (
             db.query(
@@ -64,8 +70,8 @@ def get_club_history(
             {
                 "cycle_id": cycle.id,
                 "book": book,
-                "start_date": cycle.start_date,
-                "end_date": cycle.end_date,
+                "start_date": cycle.suggestion_start_date,
+                "end_date": cycle.discussion_date,
                 "members_started": started,
                 "members_completed": completed,
             }
