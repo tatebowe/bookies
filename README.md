@@ -17,12 +17,14 @@ A web application for managing book clubs.
 - Voting and Suggestion systems
 - Private/Public Book Clubs
 - Reading Status
-
-## Features (planned)
 - Book rating/reviews
 - Google OAuth login
 - Reading history
+- Club and User Dashboard
+
+## Features (planned)
 - Book discussions
+- Private Club Invites
 
 ## Tech Stack
 

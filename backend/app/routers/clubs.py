@@ -6,6 +6,7 @@ from app.dependencies import get_db
 from app.models.user import User
 from app.schemas.club import (
     ClubCreate,
+    ClubDiscoveryResponse,
     ClubMemberResponse,
     ClubResponse,
 )
@@ -13,6 +14,8 @@ from app.services.club_service import (
     create_club,
     get_club_members,
     get_clubs_for_user,
+    get_discoverable_clubs,
+    search_public_clubs,
 )
 
 router = APIRouter(
@@ -63,4 +66,30 @@ def get_members(
     return get_club_members(
         db,
         club_id,
+    )
+
+
+@router.get(
+    "/discover",
+    response_model=list[ClubDiscoveryResponse],
+)
+def discover_clubs(
+    db: Session = Depends(get_db),
+):
+    return get_discoverable_clubs(
+        db,
+    )
+
+
+@router.get(
+    "/search",
+    response_model=list[ClubDiscoveryResponse],
+)
+def search_clubs(
+    q: str,
+    db: Session = Depends(get_db),
+):
+    return search_public_clubs(
+        db,
+        q,
     )

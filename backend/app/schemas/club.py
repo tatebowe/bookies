@@ -48,3 +48,16 @@ class ClubMemberResponse(BaseModel):
     model_config = ConfigDict(
         from_attributes=True,
     )
+
+
+class ClubDiscoveryResponse(BaseModel):
+    id: int
+    name: str
+    description: str | None
+    is_public: bool
+    join_policy: str
+    member_count: int
+
+    model_config = ConfigDict(
+        from_attributes=True,
+    )

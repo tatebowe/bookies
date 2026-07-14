@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.exceptions.club_exceptions import (
@@ -168,3 +169,89 @@ def get_club_by_id(
         raise ClubNotFoundError("Club not found")
 
     return club
+
+
+def get_discoverable_clubs(
+    db: Session,
+):
+    """
+    Return public clubs available for discovery.
+    """
+
+    results = (
+        db.query(
+            Club,
+            func.count(ClubMembership.id).label("member_count"),
+        )
+        .outerjoin(
+            ClubMembership,
+            Club.id == ClubMembership.club_id,
+        )
+        .filter(
+            Club.is_public.is_(True),
+        )
+        .group_by(
+            Club.id,
+        )
+        .all()
+    )
+
+    clubs = []
+
+    for club, member_count in results:
+        clubs.append(
+            {
+                "id": club.id,
+                "name": club.name,
+                "description": club.description,
+                "is_public": club.is_public,
+                "join_policy": club.join_policy,
+                "member_count": member_count,
+            }
+        )
+
+    return clubs
+
+
+def search_public_clubs(
+    db: Session,
+    query: str,
+):
+    """
+    Search public clubs by name.
+    """
+
+    results = (
+        db.query(
+            Club,
+            func.count(ClubMembership.id).label("member_count"),
+        )
+        .outerjoin(
+            ClubMembership,
+            Club.id == ClubMembership.club_id,
+        )
+        .filter(
+            Club.is_public.is_(True),
+            Club.name.ilike(f"%{query}%"),
+        )
+        .group_by(
+            Club.id,
+        )
+        .all()
+    )
+
+    clubs = []
+
+    for club, member_count in results:
+        clubs.append(
+            {
+                "id": club.id,
+                "name": club.name,
+                "description": club.description,
+                "is_public": club.is_public,
+                "join_policy": club.join_policy,
+                "member_count": member_count,
+            }
+        )
+
+    return clubs

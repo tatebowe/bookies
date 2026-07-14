@@ -93,3 +93,59 @@ def test_get_club_members(client, auth_headers):
     assert len(members) == 1
     assert members[0]["username"] == "testuser"
     assert members[0]["email"] == "test@example.com"
+
+
+def test_discover_public_clubs(
+    client,
+    auth_headers,
+):
+
+    client.post(
+        "/clubs/",
+        headers=auth_headers,
+        json={
+            "name": "Fantasy Club",
+            "description": "Fantasy books",
+            "is_public": True,
+            "join_policy": "open",
+        },
+    )
+
+    response = client.get(
+        "/clubs/discover",
+    )
+
+    assert response.status_code == 200
+
+    clubs = response.json()
+
+    assert len(clubs) == 1
+    assert clubs[0]["name"] == "Fantasy Club"
+    assert clubs[0]["member_count"] == 1
+
+
+def test_search_public_clubs(
+    client,
+    auth_headers,
+):
+
+    client.post(
+        "/clubs/",
+        headers=auth_headers,
+        json={
+            "name": "SciFi Readers",
+            "description": "Science fiction",
+            "is_public": True,
+        },
+    )
+
+    response = client.get(
+        "/clubs/search?q=Sci",
+    )
+
+    assert response.status_code == 200
+
+    clubs = response.json()
+
+    assert len(clubs) == 1
+    assert clubs[0]["name"] == "SciFi Readers"
