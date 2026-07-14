@@ -1,8 +1,19 @@
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict
 
 
-class DashboardClub(BaseModel):
+class DashboardBook(BaseModel):
+    id: int
+    title: str
+    author: str | None = None
 
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
+
+
+class DashboardClub(BaseModel):
     id: int
     name: str
 
@@ -12,8 +23,10 @@ class DashboardClub(BaseModel):
 
 
 class DashboardReading(BaseModel):
-
+    id: int
     status: str
+    book: DashboardBook
+    club: DashboardClub
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -21,23 +34,40 @@ class DashboardReading(BaseModel):
 
 
 class DashboardCycle(BaseModel):
-
     id: int
     phase: str
     active: bool
+    voting_end_date: datetime | None = None
 
     model_config = ConfigDict(
         from_attributes=True,
     )
 
 
-class UserDashboardClub(BaseModel):
-
+class DashboardMembership(BaseModel):
     club: DashboardClub
     active_cycle: DashboardCycle | None = None
-    current_reading: DashboardReading | None = None
+
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
+
+
+class DashboardHistoryItem(BaseModel):
+    id: int
+    book: DashboardBook
+    club: DashboardClub
+    status: str
+
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
 
 
 class DashboardResponse(BaseModel):
 
-    clubs: list[UserDashboardClub]
+    current_readings: list[DashboardReading]
+
+    clubs: list[DashboardMembership]
+
+    history: list[DashboardHistoryItem]
