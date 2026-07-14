@@ -9,9 +9,8 @@ from app.models.vote import BookVote
 from app.services.club_service import get_club_by_id
 from app.services.helpers import save_and_refresh
 from app.services.permission_service import require_club_member
-from app.services.suggestion_service import (
-    get_suggestion_by_id,
-)
+from app.services.suggestion_service import get_suggestion_by_id
+from app.services.voting_cycle_service import get_active_cycle
 
 
 def get_user_vote_count(
@@ -70,8 +69,15 @@ def cast_vote(
         suggestion_id,
     )
 
-    if suggestion.cycle.phase != "voting":
-        raise InvalidCyclePhaseError("Voting is not currently open")
+    cycle = get_active_cycle(
+        db,
+        suggestion.club_id,
+    )
+
+    if cycle is None or cycle.phase != "voting":
+        raise InvalidCyclePhaseError(
+            "Voting is not currently open",
+        )
 
     require_club_member(
         db,
@@ -84,7 +90,9 @@ def cast_vote(
         suggestion_id,
         user_id,
     ):
-        raise AlreadyVotedError("User has already voted for this suggestion")
+        raise AlreadyVotedError(
+            "User has already voted for this suggestion",
+        )
 
     club = get_club_by_id(
         db,
@@ -94,16 +102,18 @@ def cast_vote(
     current_votes = get_user_vote_count(
         db,
         suggestion.club_id,
-        suggestion.cycle_id,
+        cycle.id,
         user_id,
     )
 
     if current_votes >= club.max_votes_per_user:
-        raise VoteLimitExceededError("Maximum votes reached")
+        raise VoteLimitExceededError(
+            "Maximum votes reached",
+        )
 
     vote = BookVote(
         suggestion_id=suggestion.id,
-        cycle_id=suggestion.cycle_id,
+        cycle_id=cycle.id,
         user_id=user_id,
     )
 
@@ -149,7 +159,9 @@ def remove_vote(
     )
 
     if vote is None:
-        raise AlreadyVotedError("Vote does not exist")
+        raise AlreadyVotedError(
+            "Vote does not exist",
+        )
 
     db.delete(vote)
     db.commit()

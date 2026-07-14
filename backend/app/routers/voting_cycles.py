@@ -12,8 +12,6 @@ from app.services.voting_cycle_service import (
     close_voting_cycle,
     create_voting_cycle,
     get_active_cycle,
-    open_voting_phase,
-    select_winner,
 )
 
 router = APIRouter(
@@ -68,38 +66,6 @@ def close_cycle(
     user: User = Depends(get_current_user),
 ):
     return close_voting_cycle(
-        db,
-        cycle_id,
-        user.id,
-    )
-
-
-@router.post(
-    "/cycles/{cycle_id}/winner",
-    response_model=VotingCycleResponse,
-)
-def choose_winner(
-    cycle_id: int,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
-    return select_winner(
-        db,
-        cycle_id,
-        user.id,
-    )
-
-
-@router.post(
-    "/cycles/{cycle_id}/open-voting",
-    response_model=VotingCycleResponse,
-)
-def open_voting(
-    cycle_id: int,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
-    return open_voting_phase(
         db,
         cycle_id,
         user.id,
