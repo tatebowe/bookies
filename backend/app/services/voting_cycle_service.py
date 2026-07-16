@@ -163,7 +163,23 @@ def get_active_cycle(
     )
 
     if cycle is None:
-        return None
+        now = datetime.now(timezone.utc)
+        cycle = (
+            db.query(VotingCycle)
+            .filter(
+                VotingCycle.club_id == club_id,
+                VotingCycle.active.is_(False),
+                VotingCycle.suggestion_start_date <= now,
+                VotingCycle.phase == "suggestion",
+            )
+            .order_by(VotingCycle.suggestion_start_date)
+            .first()
+        )
+        if cycle is None:
+            return None
+        cycle.active = True
+        db.commit()
+        db.refresh(cycle)
 
     return update_cycle_phase(
         db,
@@ -205,9 +221,9 @@ def create_voting_cycle(
         club_id,
     )
 
-    if existing_cycle:
+    if existing_cycle and suggestion_start_date < existing_cycle.discussion_date:
         raise ActiveVotingCycleExistsError(
-            "Club already has an active voting cycle",
+            "The next cycle must start after the active cycle discussion",
         )
 
     cycle = VotingCycle(
@@ -218,13 +234,37 @@ def create_voting_cycle(
         voting_end_date=voting_end_date,
         discussion_date=discussion_date,
         phase="suggestion",
-        active=True,
+        active=existing_cycle is None,
     )
 
     return save_and_refresh(
         db,
         cycle,
     )
+
+
+def update_voting_cycle(
+    db: Session,
+    cycle_id: int,
+    suggestion_start_date: datetime,
+    voting_start_date: datetime,
+    voting_end_date: datetime,
+    discussion_date: datetime,
+    user_id: int,
+    name: str | None = None,
+) -> VotingCycle:
+    cycle = get_cycle_by_id(db, cycle_id)
+    require_club_admin(db, cycle.club_id, user_id)
+    if not (
+        suggestion_start_date < voting_start_date < voting_end_date < discussion_date
+    ):
+        raise InvalidVotingCycleError("Cycle dates must be in chronological order")
+    cycle.name = name
+    cycle.suggestion_start_date = suggestion_start_date
+    cycle.voting_start_date = voting_start_date
+    cycle.voting_end_date = voting_end_date
+    cycle.discussion_date = discussion_date
+    return save_and_refresh(db, cycle)
 
 
 def get_cycle_by_id(

@@ -7,11 +7,13 @@ from app.models.user import User
 from app.schemas.voting_cycle import (
     VotingCycleCreate,
     VotingCycleResponse,
+    VotingCycleUpdate,
 )
 from app.services.voting_cycle_service import (
     close_voting_cycle,
     create_voting_cycle,
     get_active_cycle,
+    update_voting_cycle,
 )
 
 router = APIRouter(
@@ -53,6 +55,25 @@ def get_current_cycle(
     return get_active_cycle(
         db,
         club_id,
+    )
+
+
+@router.patch("/cycles/{cycle_id}", response_model=VotingCycleResponse)
+def update_cycle(
+    cycle_id: int,
+    cycle: VotingCycleUpdate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    return update_voting_cycle(
+        db,
+        cycle_id,
+        cycle.suggestion_start_date,
+        cycle.voting_start_date,
+        cycle.voting_end_date,
+        cycle.discussion_date,
+        user.id,
+        cycle.name,
     )
 
 

@@ -39,7 +39,8 @@ class DashboardReading(BaseModel):
     rating: float | None = None
     review: str | None = None
     book: DashboardBook
-    club: DashboardClub
+    club: DashboardClub | None = None
+    club_reading_id: int | None = None
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -58,7 +59,7 @@ class DashboardCycle(BaseModel):
 
 
 class DashboardMembership(BaseModel):
-    club: DashboardClub
+    club: DashboardClub | None = None
     role: str
     active_cycle: DashboardCycle | None = None
 
@@ -73,7 +74,7 @@ class DashboardHistoryItem(BaseModel):
     rating: float | None = None
     review: str | None = None
     book: DashboardBook
-    club: DashboardClub
+    club: DashboardClub | None = None
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -85,6 +86,7 @@ class DashboardNote(BaseModel):
     title: str | None = None
     content: str
     created_at: datetime
+    book: DashboardBook | None = None
 
     model_config = ConfigDict(
         from_attributes=True,

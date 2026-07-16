@@ -7,6 +7,9 @@ class ClubDashboardClub(BaseModel):
     id: int
     name: str
     description: str | None = None
+    is_public: bool
+    join_policy: str
+    max_votes_per_user: int
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -43,6 +46,8 @@ class DashboardCycle(BaseModel):
     phase: str
     active: bool
     voting_end_date: datetime | None = None
+    suggestion_start_date: datetime | None = None
+    voting_start_date: datetime | None = None
     discussion_date: datetime | None = None
     selected_book: ClubDashboardBook | None = None
 
@@ -63,6 +68,7 @@ class ClubDashboardResponse(BaseModel):
     active_cycle: DashboardCycle | None = None
 
     discussion_notes_count: int
+    viewer_role: str
 
     model_config = ConfigDict(
         from_attributes=True,

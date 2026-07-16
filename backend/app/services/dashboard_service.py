@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from app.models.club_reading import ClubReading
 from app.models.membership import ClubMembership
 from app.models.reading_entry import ReadingEntry
 from app.models.reading_note import ReadingNote
@@ -51,21 +52,35 @@ def get_user_dashboard(
             }
         )
 
-    current_readings = (
+    reading_entries = (
         db.query(ReadingEntry)
         .filter(
             ReadingEntry.user_id == user_id,
-            ReadingEntry.status.in_(
-                [
-                    "reading",
-                    "started",
-                ]
-            ),
+            ReadingEntry.status != "completed",
         )
         .all()
     )
 
-    history = (
+    current_readings = []
+    for entry in reading_entries:
+        club_reading = (
+            db.query(ClubReading)
+            .filter(ClubReading.reading_entry_id == entry.id)
+            .first()
+        )
+        current_readings.append(
+            {
+                "id": entry.id,
+                "status": entry.status,
+                "rating": entry.rating,
+                "review": entry.review,
+                "book": entry.book,
+                "club": club_reading.club if club_reading else None,
+                "club_reading_id": club_reading.id if club_reading else None,
+            }
+        )
+
+    history_entries = (
         db.query(ReadingEntry)
         .filter(
             ReadingEntry.user_id == user_id,
@@ -74,13 +89,48 @@ def get_user_dashboard(
         .all()
     )
 
-    notes = (
+    history = []
+    for entry in history_entries:
+        club_reading = (
+            db.query(ClubReading)
+            .filter(ClubReading.reading_entry_id == entry.id)
+            .first()
+        )
+        history.append(
+            {
+                "id": entry.id,
+                "status": entry.status,
+                "rating": entry.rating,
+                "review": entry.review,
+                "book": entry.book,
+                "club": club_reading.club if club_reading else None,
+            }
+        )
+
+    user_notes = (
         db.query(ReadingNote)
         .filter(
             ReadingNote.user_id == user_id,
         )
         .all()
     )
+
+    notes = []
+    for note in user_notes:
+        book = None
+        if note.reading_entry is not None:
+            book = note.reading_entry.book
+        elif note.club_reading is not None:
+            book = note.club_reading.book
+        notes.append(
+            {
+                "id": note.id,
+                "title": note.title,
+                "content": note.content,
+                "created_at": note.created_at,
+                "book": book,
+            }
+        )
 
     return {
         "profile": user,

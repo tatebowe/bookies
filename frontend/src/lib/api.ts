@@ -1,0 +1,123 @@
+const apiBaseUrl = import.meta.env.VITE_API_URL ?? "/api";
+
+export type Dashboard = {
+  profile: { id: number; username: string; display_name: string | null; created_at: string };
+  current_readings: Array<{ id: number; status: string; rating: number | null; review: string | null; book: { id: number; title: string; authors: string | null }; club: { id: number; name: string } | null; club_reading_id: number | null }>;
+  clubs: Array<{ club: { id: number; name: string }; role: string; active_cycle: { id: number; phase: string; active: boolean; voting_end_date: string | null } | null }>;
+  history: Array<{ id: number; status: string; rating: number | null; review: string | null; book: { id: number; title: string; authors: string | null }; club: { id: number; name: string } | null }>;
+  notes: Array<{ id: number; title: string | null; content: string; created_at: string; book: { id: number; title: string; authors: string | null } | null }>;
+};
+
+export type ClubDashboard = {
+  club: { id: number; name: string; description: string | null; is_public: boolean; join_policy: string; max_votes_per_user: number };
+  current_book: { id: number; title: string; authors: string | null } | null;
+  reading_progress: { not_started: number; reading: number; completed: number };
+  members: Array<{ username: string; role: string }>;
+  active_cycle: { id: number; phase: string; active: boolean; suggestion_start_date: string | null; voting_start_date: string | null; voting_end_date: string | null; discussion_date: string | null; selected_book: { id: number; title: string; authors: string | null } | null } | null;
+  discussion_notes_count: number;
+  viewer_role: string;
+};
+
+export type Suggestion = { id: number; anonymous: boolean; vote_count: number; book: { id: number; title: string; authors: string | null; thumbnail_url: string | null } };
+export type ClubDiscovery = { id: number; name: string; description: string | null; is_public: boolean; join_policy: string; member_count: number };
+export type BookSearchResult = { google_books_id: string; title: string; authors: string | null; description: string | null; thumbnail_url: string | null; published_date: string | null; categories: string | null };
+
+async function request(path: string, init?: RequestInit) {
+  const response = await fetch(`${apiBaseUrl}${path}`, init);
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.detail ?? "Something went wrong. Please try again.");
+  }
+  return response.json();
+}
+
+export async function login(emailOrUsername: string, password: string) {
+  const form = new URLSearchParams({ username: emailOrUsername, password });
+  return request("/auth/login", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: form });
+}
+
+export async function googleLogin(idToken: string) {
+  return request(`/auth/google?token=${encodeURIComponent(idToken)}`, { method: "POST" });
+}
+
+export async function register(input: { username: string; email: string; password: string; display_name: string }) {
+  return request("/users/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
+}
+
+export async function getDashboard(token: string): Promise<Dashboard> {
+  return request("/dashboard", { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export async function getClubDashboard(clubId: string, token: string): Promise<ClubDashboard> {
+  return request(`/clubs/${clubId}/dashboard`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export async function getSuggestions(clubId: string, token: string): Promise<Suggestion[]> {
+  return request(`/clubs/${clubId}/suggestions`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export async function discoverClubs(query = ""): Promise<ClubDiscovery[]> {
+  return request(query.trim() ? `/clubs/search?q=${encodeURIComponent(query.trim())}` : "/clubs/discover");
+}
+
+export async function joinClub(clubId: number, token: string): Promise<{ message: string; status?: string }> {
+  return request(`/clubs/${clubId}/join`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+}
+
+export async function createClub(data: { name: string; description: string; is_public: boolean; join_policy: string; max_votes_per_user: number }, token: string) {
+  return request("/clubs/", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(data) });
+}
+
+export async function createCycle(clubId: string, data: { suggestion_start_date: string; voting_start_date: string; voting_end_date: string; discussion_date: string; name?: string }, token: string) {
+  return request(`/clubs/${clubId}/cycles`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(data) });
+}
+export async function updateCycle(cycleId: number, data: { suggestion_start_date: string; voting_start_date: string; voting_end_date: string; discussion_date: string; name?: string }, token: string) {
+  return request(`/clubs/cycles/${cycleId}`, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(data) });
+}
+
+export async function updateClubSettings(clubId: string, data: { is_public: boolean; join_policy: string; max_votes_per_user: number }, token: string) {
+  return request(`/clubs/${clubId}/settings`, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(data) });
+}
+
+export async function updateMemberRole(clubId: string, username: string, role: "member" | "admin", token: string) {
+  return request(`/clubs/${clubId}/members/${encodeURIComponent(username)}/role`, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ role }) });
+}
+
+export type JoinRequest = { id: number; club_id: number; user_id: number; status: string; created_at: string };
+export async function getJoinRequests(clubId: string, token: string): Promise<JoinRequest[]> {
+  return request(`/clubs/${clubId}/join-requests`, { headers: { Authorization: `Bearer ${token}` } });
+}
+export async function decideJoinRequest(requestId: number, approved: boolean, token: string) {
+  return request(`/clubs/join-requests/${requestId}/${approved ? "approve" : "reject"}`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+}
+
+export async function searchBooks(query: string): Promise<BookSearchResult[]> {
+  return request(`/books/search?q=${encodeURIComponent(query)}`);
+}
+
+export async function addBookToReading(googleBooksId: string, token: string) {
+  const book = await request("/books/", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ google_books_id: googleBooksId }) });
+  return request("/reading-entries/", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ book_id: book.id, status: "not_started" }) });
+}
+
+export type UserClub = { id: number; name: string; description: string | null; is_public: boolean; join_policy: string; max_votes_per_user: number };
+export async function getMyClubs(token: string): Promise<UserClub[]> {
+  return request("/clubs/", { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export async function suggestBook(clubId: number, googleBooksId: string, token: string) {
+  const book = await request("/books/", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ google_books_id: googleBooksId }) });
+  return request(`/clubs/${clubId}/suggestions`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ book_id: book.id, anonymous: false }) });
+}
+
+export async function updateReadingStatus(readingEntryId: number, status: string, token: string) {
+  return request(`/reading-entries/${readingEntryId}/status`, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ status }) });
+}
+
+export async function saveReadingNote(readingEntryId: number, content: string, token: string) {
+  return request("/reading-notes/", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ reading_entry_id: readingEntryId, content }) });
+}
+
+export async function saveReadingReview(readingEntryId: number, rating: number, review: string, token: string) {
+  return request(`/reading-entries/${readingEntryId}/review`, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ rating, review }) });
+}

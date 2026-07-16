@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ClubCreate(BaseModel):
@@ -48,6 +48,16 @@ class ClubMemberResponse(BaseModel):
     model_config = ConfigDict(
         from_attributes=True,
     )
+
+
+class ClubSettingsUpdate(BaseModel):
+    is_public: bool
+    join_policy: str
+    max_votes_per_user: int = Field(ge=1)
+
+
+class ClubMemberRoleUpdate(BaseModel):
+    role: Literal["member", "admin"]
 
 
 class ClubDiscoveryResponse(BaseModel):

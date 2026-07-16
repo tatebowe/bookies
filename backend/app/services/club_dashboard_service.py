@@ -124,4 +124,5 @@ def get_club_dashboard(
             else None
         ),
         "discussion_notes_count": discussion_count,
+        "viewer_role": membership.role,
     }

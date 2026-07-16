@@ -1,0 +1,242 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IM+Fell+English:ital@0;1&family=Marck+Script&family=Special+Elite&display=swap");
+
+:root {
+  color: #1d0c05;
+  background: #5d3822;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+
+body { margin: 0; min-width: 320px; }
+
+.map-page {
+  align-items: center;
+  background:
+    radial-gradient(ellipse at 48% 37%, rgba(223, 190, 133, .7) 0%, transparent 52%),
+    radial-gradient(ellipse at 95% 90%, rgba(66, 29, 12, .34), transparent 49%),
+    linear-gradient(120deg, #7d4a25 0%, #b97c41 45%, #93532a 100%);
+  display: flex;
+  isolation: isolate;
+  justify-content: center;
+  min-height: 100svh;
+  overflow: hidden;
+  padding: 2rem;
+  position: relative;
+}
+
+.map-page::before, .map-page::after {
+  border: 1px solid rgba(74, 39, 19, .45);
+  content: "";
+  inset: 1.25rem;
+  pointer-events: none;
+  position: absolute;
+}
+
+.map-page::after { border-width: 3px 1px 1px 3px; inset: 1.65rem; opacity: .52; }
+
+.map-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+  inset: 0;
+  mix-blend-mode: multiply;
+  opacity: .15;
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+}
+
+.map-border { border: 1px solid rgba(79, 42, 20, .5); inset: .65rem; position: absolute; z-index: -1; }
+
+.map-header, .map-footer { left: 3.2rem; position: absolute; right: 3.2rem; }
+.map-header { align-items: center; display: flex; justify-content: space-between; top: 2.5rem; }
+.map-footer { bottom: 2.5rem; display: flex; gap: .65rem; justify-content: center; letter-spacing: .14em; text-transform: uppercase; }
+
+.eyebrow, .location-line, .map-footer { font-family: "Special Elite", monospace; font-size: clamp(.55rem, 1.2vw, .72rem); letter-spacing: .16em; text-transform: uppercase; }
+.eyebrow { margin: 0; }
+.map-mark { border: 1px solid currentColor; border-radius: 50%; font-family: "IM Fell English", serif; font-size: 1.3rem; height: 2rem; line-height: 1.85rem; margin: 0; text-align: center; width: 2rem; }
+
+.welcome-content { max-width: 640px; padding: 3rem 1rem; text-align: center; }
+.location-line { margin: 0 0 .6rem; }
+.welcome-title { -webkit-text-stroke: .8px rgba(255, 249, 229, .82); font-family: "Marck Script", "IM Fell English", cursive; font-size: clamp(5.8rem, 17vw, 11.5rem); font-weight: 400; letter-spacing: .015em; line-height: .8; margin: 0; paint-order: stroke fill; text-shadow: 1px 1px 0 rgba(255, 237, 178, .4), 0 0 4px rgba(255, 249, 229, .16); }
+.title-ornament { align-items: center; display: flex; gap: .9rem; justify-content: center; margin: 2.25rem auto 1.7rem; }
+.title-ornament span { background: currentColor; display: block; height: 1px; width: clamp(4rem, 12vw, 6.5rem); }
+.title-ornament i { font-size: .7rem; font-style: normal; }
+.welcome-message { font-size: clamp(.56rem, 2.4vw, 1.6rem); font-style: italic; letter-spacing: -.015em; line-height: 1.2; margin: 0 auto 2.1rem; max-width: none; white-space: nowrap; }
+
+.ink-button { align-items: center; background: #1d0c05; border: 1px solid #120703; box-shadow: 3px 3px 0 rgba(45, 20, 8, .3); color: #f2d99e; display: inline-flex; font-family: "Special Elite", monospace; font-size: .72rem; gap: 1.8rem; letter-spacing: .08em; padding: 1rem 1.2rem 1rem 1.4rem; text-decoration: none; text-transform: uppercase; transition: background .2s ease, transform .2s ease; }
+.ink-button:hover { background: #3c180b; transform: translate(-1px, -2px); }
+.ink-button:focus-visible, .text-link:focus-visible { outline: 2px solid #1d0c05; outline-offset: 4px; }
+
+.auth-content { max-width: 420px; text-align: center; }
+.auth-content h1 { font-family: "IM Fell English", serif; font-size: clamp(3rem, 9vw, 5rem); font-weight: 400; line-height: .95; margin: 1rem 0; }
+.auth-content p:not(.eyebrow) { font-size: 1.35rem; line-height: 1.25; }
+.auth-intro { margin: 0 auto 1.5rem; max-width: 360px; }
+.auth-tabs { border-bottom: 1px solid rgba(29, 12, 5, .28); display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 1.25rem; }
+.auth-tabs button { background: transparent; border: 0; border-bottom: 2px solid transparent; color: #1d0c05; cursor: pointer; font-family: "Special Elite", monospace; font-size: .68rem; letter-spacing: .05em; padding: .8rem .2rem; text-transform: uppercase; }
+.auth-tabs button.active { border-bottom-color: #1d0c05; font-weight: 700; }
+.auth-form { display: grid; gap: .85rem; text-align: left; }
+.auth-form label { display: grid; font-family: "Special Elite", monospace; font-size: .65rem; gap: .38rem; letter-spacing: .06em; text-transform: uppercase; }
+.auth-form input { background: rgba(255, 244, 205, .35); border: 1px solid rgba(29, 12, 5, .48); border-radius: 0; color: #1d0c05; font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.2rem; outline: none; padding: .65rem .75rem; }
+.auth-form input:focus { border-color: #1d0c05; box-shadow: 0 0 0 2px rgba(255, 246, 218, .45); }
+.auth-form input::placeholder { color: rgba(29, 12, 5, .5); }
+.form-submit { justify-content: space-between; margin-top: .45rem; width: 100%; }
+.form-submit:disabled { cursor: wait; opacity: .7; }
+.form-error { color: #761f12; font-size: 1.05rem !important; margin: 0; }
+.auth-divider { align-items: center; display: flex; font-family: "Special Elite", monospace; font-size: .55rem; gap: .6rem; letter-spacing: .06em; margin: 1.2rem 0 .75rem; text-transform: uppercase; }
+.auth-divider::before, .auth-divider::after { background: rgba(29, 12, 5, .28); content: ""; flex: 1; height: 1px; }
+.google-button { display: flex; justify-content: center; min-height: 40px; }
+.google-config-note { font-size: .82rem !important; margin: 0; }
+.google-config-note code { font-size: .75em; }
+.text-link { color: #1d0c05; display: inline-block; font-family: "Special Elite", monospace; font-size: .7rem; letter-spacing: .05em; margin-top: 1rem; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+
+.dashboard-page { background: #e6c98e; color: #1d0c05; min-height: 100svh; padding: 0 5vw 4rem; }
+.dashboard-header { align-items: center; border-bottom: 1px solid rgba(29, 12, 5, .28); display: flex; justify-content: space-between; padding: 1.25rem 0; }
+.brand { color: inherit; font-family: "Marck Script", "IM Fell English", cursive; font-size: 2.5rem; line-height: 1; text-decoration: none; }
+.header-actions { align-items: center; display: flex; font-family: "Special Elite", monospace; font-size: .65rem; gap: 1rem; letter-spacing: .04em; text-transform: uppercase; }
+.sign-out, .quiet-button { background: transparent; border: 1px solid currentColor; color: inherit; cursor: pointer; font-family: "Special Elite", monospace; font-size: .62rem; letter-spacing: .05em; padding: .55rem .7rem; text-transform: uppercase; }
+.dashboard-hero { max-width: 700px; padding: clamp(3rem, 8vw, 6rem) 0 clamp(2rem, 5vw, 4rem); }
+.dashboard-hero h1 { font-family: "IM Fell English", Georgia, serif; font-size: clamp(3rem, 7vw, 5.8rem); font-weight: 400; line-height: .92; margin: .7rem 0 1rem; }
+.dashboard-hero > p:last-child { font-size: 1.35rem; line-height: 1.25; margin: 0; max-width: 460px; }
+.dashboard-grid { display: grid; gap: 1.2rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.dashboard-card { background: rgba(255, 241, 201, .46); border: 1px solid rgba(29, 12, 5, .37); box-shadow: 4px 4px 0 rgba(58, 27, 10, .12); min-height: 220px; padding: 1.4rem; }
+.card-heading { align-items: baseline; border-bottom: 1px solid rgba(29, 12, 5, .2); display: flex; justify-content: space-between; margin-bottom: 1rem; }
+.card-heading .eyebrow { margin: 0 0 .75rem; }
+.card-heading > span { font-family: "Special Elite", monospace; font-size: .58rem; opacity: .72; text-transform: uppercase; }
+.reading-row, .club-row, .history-row { align-items: center; display: flex; gap: .75rem; padding: .55rem 0; }
+.reading-item { border-bottom: 1px dashed rgba(29, 12, 5, .24); padding: .3rem 0 .85rem; }
+.reading-item:last-child { border-bottom: 0; }
+.reading-row h2, .club-row h2, .note-row h2, .history-row h2 { font-family: "IM Fell English", Georgia, serif; font-size: 1.35rem; font-weight: 400; line-height: 1; margin: 0 0 .2rem; }
+.reading-row p, .club-row p, .note-row p, .history-row p { font-size: 1rem; line-height: 1.1; margin: 0; }
+.book-spine { align-self: stretch; background: #5d2c1b; border: 1px solid #2e1007; min-height: 50px; width: 13px; }
+.status-pill { border: 1px solid rgba(29, 12, 5, .4); font-family: "Special Elite", monospace; font-size: .55rem; margin-left: auto; padding: .35rem .4rem; text-transform: uppercase; }
+.reading-actions { margin: .15rem 0 0 2.1rem; }
+.status-actions { align-items: center; display: flex; flex-wrap: wrap; gap: .35rem; }
+.status-actions span { font-family: "Special Elite", monospace; font-size: .55rem; margin-right: .2rem; text-transform: uppercase; }
+.status-actions button, .reading-writing button { background: transparent; border: 1px solid rgba(29, 12, 5, .55); color: #1d0c05; cursor: pointer; font-family: "Special Elite", monospace; font-size: .52rem; letter-spacing: .04em; padding: .35rem .45rem; text-transform: uppercase; }
+.status-actions button:disabled, .reading-writing button:disabled { cursor: default; opacity: .45; }
+.reading-writing { align-items: end; display: grid; gap: .4rem; grid-template-columns: 1fr auto; margin-top: .7rem; }
+.reading-writing label { display: grid; font-family: "Special Elite", monospace; font-size: .53rem; gap: .22rem; letter-spacing: .04em; text-transform: uppercase; }
+.reading-writing textarea, .reading-writing select { background: rgba(255, 244, 205, .3); border: 1px solid rgba(29, 12, 5, .38); color: #1d0c05; font-family: "Cormorant Garamond", Georgia, serif; font-size: 1rem; min-height: 2.1rem; padding: .35rem .45rem; resize: vertical; }
+.review-writing { grid-template-columns: 1fr auto auto; }
+.reading-message { font-size: .9rem !important; font-style: italic; margin: .45rem 0 0 !important; }
+.club-monogram { align-items: center; background: #2b1207; border-radius: 50%; color: #f6dc9f; display: flex; font-family: "IM Fell English", serif; font-size: 1.4rem; height: 2.4rem; justify-content: center; width: 2.4rem; }
+.club-link { color: inherit; font-family: "IM Fell English", Georgia, serif; font-size: 1.35rem; line-height: 1; text-decoration-color: rgba(29, 12, 5, .35); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.club-link:hover { text-decoration-color: currentColor; }
+.note-row { border-bottom: 1px dashed rgba(29, 12, 5, .25); padding: .6rem 0; }
+.note-row time { display: block; font-family: "Special Elite", monospace; font-size: .53rem; letter-spacing: .04em; margin: -.05rem 0 .35rem; opacity: .72; text-transform: uppercase; }
+.note-row p { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.history-row > span { color: #7b3a17; font-size: 1rem; letter-spacing: .06em; min-width: 3.2rem; }
+.quiet-button { margin-top: 1rem; }
+.quiet-link { color: inherit; display: inline-block; font-family: "Special Elite", monospace; font-size: .6rem; letter-spacing: .05em; margin-top: 1rem; text-decoration-thickness: 1px; text-underline-offset: 4px; text-transform: uppercase; }
+.empty-state { color: rgba(29, 12, 5, .72); font-size: 1.15rem; font-style: italic; line-height: 1.2; max-width: 280px; }
+.loading-ink { font-family: "IM Fell English", Georgia, serif; font-size: 2rem; font-style: italic; }
+
+.back-link { color: inherit; font-family: "Special Elite", monospace; font-size: .65rem; letter-spacing: .06em; text-decoration: none; text-transform: uppercase; }
+.club-hero { max-width: 770px; padding: clamp(3rem, 8vw, 6rem) 0 clamp(2rem, 5vw, 4rem); }
+.club-hero h1 { font-family: "IM Fell English", Georgia, serif; font-size: clamp(3.8rem, 8vw, 6.5rem); font-weight: 400; line-height: .85; margin: .7rem 0 1rem; }
+.club-hero > p:not(.eyebrow) { font-size: 1.35rem; line-height: 1.25; margin: 0; max-width: 560px; }
+.cycle-label { border: 1px solid rgba(29, 12, 5, .45); display: inline-block; font-family: "Special Elite", monospace; font-size: .6rem; letter-spacing: .08em; margin-top: 1.3rem; padding: .5rem .65rem; text-transform: uppercase; }
+.club-layout { display: grid; gap: 1.2rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.feature-book { min-height: 300px; }
+.feature-book h2 { font-family: "IM Fell English", Georgia, serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 400; line-height: .94; margin: .55rem 0 .4rem; }
+.feature-book > p:not(.eyebrow) { font-size: 1.2rem; margin: 0; }
+.large-book-spine { background: linear-gradient(90deg, #4a1c0d, #7f3b19 25%, #4a1c0d 42%, #8e441e 100%); border: 1px solid #2e1007; height: 8px; margin-top: 1.2rem; width: 100%; }
+.date-note { border-top: 1px dashed rgba(29, 12, 5, .28); font-style: italic; margin-top: 1.4rem !important; padding-top: .75rem; }
+.progress-card { display: flex; flex-direction: column; justify-content: space-between; }
+.progress-summary { align-items: baseline; display: flex; gap: .6rem; margin: .4rem 0 1rem; }
+.progress-summary strong { font-family: "IM Fell English", serif; font-size: 4rem; font-weight: 400; line-height: .8; }
+.progress-summary span, .progress-key, .discussion-count { font-size: 1rem; }
+.progress-bar { background: rgba(29, 12, 5, .13); display: flex; height: 12px; overflow: hidden; }
+.progress-reading { background: #a3602f; }
+.progress-completed { background: #2c1609; }
+.progress-key { display: flex; flex-wrap: wrap; gap: .4rem 1rem; margin-top: .75rem; }
+.discussion-count { border-top: 1px dashed rgba(29, 12, 5, .28); margin: 1.3rem 0 0; padding-top: .75rem; }
+.suggestion-row { align-items: center; border-bottom: 1px dashed rgba(29, 12, 5, .25); display: flex; gap: .75rem; padding: .65rem 0; }
+.suggestion-row h2 { font-family: "IM Fell English", Georgia, serif; font-size: 1.35rem; font-weight: 400; line-height: 1; margin: 0 0 .18rem; }
+.suggestion-row p { font-size: 1rem; margin: 0; }
+.suggestion-book { align-items: center; background: #6b3217; color: #f8dfa6; display: flex; font-family: "IM Fell English", serif; font-size: 1.3rem; height: 2.4rem; justify-content: center; width: 1.8rem; }
+.vote-count { font-family: "Special Elite", monospace; font-size: .55rem; margin-left: auto; text-transform: uppercase; white-space: nowrap; }
+.member-list { display: grid; gap: .45rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.member-row { align-items: center; display: flex; gap: .5rem; }
+.member-row > span { align-items: center; background: #2b1207; border-radius: 50%; color: #f6dc9f; display: flex; font-family: "IM Fell English", serif; height: 1.8rem; justify-content: center; width: 1.8rem; }
+.member-row p { font-size: 1rem; margin: 0; }
+.member-row small { display: block; font-family: "Special Elite", monospace; font-size: .5rem; letter-spacing: .05em; text-transform: uppercase; }
+.management-panel { border-top: 2px solid #1d0c05; margin-top: 3rem; padding: 2rem 0; }
+.management-panel h2 { font-family: "IM Fell English", Georgia, serif; font-size: 3rem; font-weight: 400; margin: .5rem 0 1.25rem; }
+.manage-form { background: rgba(255, 241, 201, .46); border: 1px solid rgba(29, 12, 5, .36); display: grid; gap: .7rem; margin: 1rem 0; max-width: 650px; padding: 1.1rem; }
+.manage-form h3 { font-family: "IM Fell English", Georgia, serif; font-size: 1.7rem; font-weight: 400; margin: 0; }
+.manage-form label { display: grid; font-family: "Special Elite", monospace; font-size: .57rem; gap: .25rem; letter-spacing: .04em; text-transform: uppercase; }
+.manage-form input, .manage-form select { background: rgba(255, 244, 205, .32); border: 1px solid rgba(29, 12, 5, .4); color: #1d0c05; font-family: "Cormorant Garamond", Georgia, serif; font-size: 1rem; padding: .45rem; }
+.manage-form button { background: #1d0c05; border: 1px solid #1d0c05; color: #f2d99e; cursor: pointer; font-family: "Special Elite", monospace; font-size: .6rem; justify-self: start; letter-spacing: .04em; padding: .5rem .7rem; text-transform: uppercase; }
+.promote-row { align-items: center; border-top: 1px dashed rgba(29, 12, 5, .25); display: flex; justify-content: space-between; padding-top: .55rem; }
+.club-controls-trigger { background: #1d0c05; border: 1px solid #1d0c05; bottom: 1.5rem; color: #f2d99e; cursor: pointer; font-family: "Special Elite", monospace; font-size: .62rem; letter-spacing: .06em; padding: .8rem 1rem; position: fixed; right: 1.5rem; text-transform: uppercase; z-index: 5; }
+.control-overlay { inset: 0; position: fixed; z-index: 10; }
+.control-scrim { background: rgba(29, 12, 5, .46); border: 0; inset: 0; position: absolute; width: 100%; }
+.control-drawer { background: #e6c98e; border-left: 1px solid #1d0c05; box-shadow: -8px 0 30px rgba(29, 12, 5, .25); height: 100%; overflow-y: auto; padding: 2rem; position: absolute; right: 0; top: 0; width: min(92vw, 420px); }
+.control-drawer h2 { font-family: "IM Fell English", Georgia, serif; font-size: 3rem; font-weight: 400; line-height: .9; margin: .5rem 0 1.5rem; }
+.control-drawer h3 { border-bottom: 1px solid rgba(29, 12, 5, .25); font-family: "IM Fell English", Georgia, serif; font-size: 1.6rem; font-weight: 400; margin: 1.5rem 0 .6rem; padding-bottom: .35rem; }
+.drawer-close { background: transparent; border: 0; color: #1d0c05; cursor: pointer; font-size: 2rem; line-height: 1; position: absolute; right: 1rem; top: 1rem; }
+.drawer-note, .control-drawer section > p { font-size: 1.05rem; font-style: italic; line-height: 1.2; }
+.request-row { align-items: center; border-bottom: 1px dashed rgba(29, 12, 5, .25); display: flex; gap: .45rem; padding: .55rem 0; }
+.request-row span { flex: 1; font-size: 1rem; }
+.request-row button { background: transparent; border: 1px solid #1d0c05; color: #1d0c05; cursor: pointer; font-family: "Special Elite", monospace; font-size: .52rem; padding: .4rem .45rem; text-transform: uppercase; }
+.search-hero { max-width: 720px; padding: clamp(3rem, 8vw, 6rem) 0 2rem; }
+.search-hero h1 { font-family: "IM Fell English", Georgia, serif; font-size: clamp(3.5rem, 7vw, 5.5rem); font-weight: 400; line-height: .9; margin: .7rem 0 1.5rem; }
+.search-hero form { display: flex; max-width: 600px; }
+.search-hero input { background: rgba(255, 244, 205, .42); border: 1px solid rgba(29, 12, 5, .48); color: #1d0c05; flex: 1; font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.2rem; min-width: 0; padding: .75rem .9rem; }
+.search-hero button { background: #1d0c05; border: 1px solid #1d0c05; color: #f2d99e; cursor: pointer; font-family: "Special Elite", monospace; font-size: .65rem; letter-spacing: .06em; padding: .75rem 1rem; text-transform: uppercase; }
+.create-club-trigger { margin-top: 1rem; }
+.create-club-form { background: rgba(255, 241, 201, .46); border: 1px solid rgba(29, 12, 5, .37); display: grid; gap: .7rem; margin-bottom: 2rem; max-width: 600px; padding: 1.2rem; }
+.create-club-form h2 { font-family: "IM Fell English", Georgia, serif; font-size: 2.2rem; font-weight: 400; margin: 0; }
+.create-club-form label { display: grid; font-family: "Special Elite", monospace; font-size: .57rem; gap: .28rem; letter-spacing: .04em; text-transform: uppercase; }
+.create-club-form input, .create-club-form textarea, .create-club-form select { background: rgba(255, 244, 205, .35); border: 1px solid rgba(29, 12, 5, .42); color: #1d0c05; font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.1rem; padding: .45rem; }
+.create-club-form textarea { min-height: 5rem; resize: vertical; }
+.create-club-form button { justify-self: start; }
+.result-grid { display: grid; gap: 1.2rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.discovery-card h2, .book-result h2 { font-family: "IM Fell English", Georgia, serif; font-size: 2rem; font-weight: 400; line-height: .95; margin: .7rem 0; }
+.discovery-card > p:not(.eyebrow) { font-size: 1.15rem; line-height: 1.18; }
+.discovery-actions { align-items: center; display: flex; gap: 1rem; }
+.book-results { display: grid; gap: 1rem; max-width: 850px; }
+.book-result { background: rgba(255, 241, 201, .46); border: 1px solid rgba(29, 12, 5, .37); display: flex; gap: 1.2rem; padding: 1rem; }
+.book-result img, .book-cover-fallback { background: #6b3217; color: #f8dfa6; flex: 0 0 78px; height: 115px; object-fit: cover; }
+.book-cover-fallback { align-items: center; display: flex; font-family: "IM Fell English", serif; font-size: 2.5rem; justify-content: center; }
+.book-result p { font-size: 1.1rem; margin: .2rem 0; }
+.book-result .eyebrow { font-size: .55rem; }
+.book-description { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.15; overflow: hidden; }
+.book-result-content { min-width: 0; }
+.add-reading-button { background: transparent; border: 1px solid #1d0c05; color: #1d0c05; cursor: pointer; font-family: "Special Elite", monospace; font-size: .58rem; letter-spacing: .05em; margin-top: .85rem; padding: .5rem .65rem; text-transform: uppercase; }
+.add-reading-button:hover:not(:disabled) { background: #1d0c05; color: #f2d99e; }
+.add-reading-button:disabled { cursor: default; opacity: .6; }
+.book-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.suggest-club-select { display: grid; font-family: "Special Elite", monospace; font-size: .58rem; gap: .35rem; letter-spacing: .04em; margin-top: 1rem; max-width: 360px; text-transform: uppercase; }
+.suggest-club-select select { background: rgba(255, 244, 205, .42); border: 1px solid rgba(29, 12, 5, .48); color: #1d0c05; font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.1rem; padding: .5rem; }
+
+.ink-reveal { animation: ink-reveal .45s ease-out both; }
+.ink-reveal-delay { animation-delay: .25s; }
+@keyframes ink-reveal { from { opacity: 0; } to { opacity: 1; } }
+
+.letter-write > span { animation: letter-write .5s ease-out both; display: inline-block; }
+@keyframes letter-write { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ink-reveal, .letter-write > span { animation: none; }
+}
+
+@media (max-width: 520px) {
+  .map-page { padding: 1.5rem; }
+  .map-page::before { inset: .75rem; }
+  .map-page::after { inset: 1.05rem; }
+  .map-header, .map-footer { left: 1.65rem; right: 1.65rem; }
+  .map-header { top: 1.6rem; }
+  .map-footer { bottom: 1.6rem; }
+  .dashboard-page { padding: 0 1.25rem 2rem; }
+  .dashboard-header { align-items: flex-start; gap: 1rem; }
+  .header-actions { align-items: flex-end; flex-direction: column; gap: .45rem; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .reading-actions { margin-left: 0; }
+  .reading-writing, .review-writing { grid-template-columns: 1fr; }
+  .club-layout { grid-template-columns: 1fr; }
+  .member-list { grid-template-columns: 1fr; }
+  .result-grid { grid-template-columns: 1fr; }
+}

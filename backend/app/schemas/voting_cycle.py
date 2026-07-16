@@ -12,6 +12,10 @@ class VotingCycleCreate(BaseModel):
     discussion_date: datetime
 
 
+class VotingCycleUpdate(VotingCycleCreate):
+    pass
+
+
 class VotingCycleResponse(BaseModel):
     id: int
     club_id: int

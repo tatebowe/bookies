@@ -108,6 +108,9 @@ def update_reading_status(
 
     reading.status = status
 
+    for club_reading in reading.club_readings:
+        club_reading.status = status
+
     if status == "reading" and reading.started_at is None:
         reading.started_at = datetime.utcnow()
 
@@ -137,6 +140,10 @@ def update_reading_review(
 
     reading.rating = rating
     reading.review = review
+
+    for club_reading in reading.club_readings:
+        club_reading.rating = rating
+        club_reading.review = review
 
     return save_and_refresh(
         db,
