@@ -23,7 +23,6 @@ export function WelcomePage() {
       </header>
 
       <section className="welcome-content" aria-labelledby="welcome-title">
-        <p className="location-line ink-reveal ink-reveal-delay"><AnimatedText text="You are here" delayOffset={.1} /></p>
         <h1 id="welcome-title" className="welcome-title"><AnimatedText text="Tomeys" delayOffset={.18} /></h1>
         <div className="title-ornament ink-reveal ink-reveal-delay" aria-hidden="true">
           <span />

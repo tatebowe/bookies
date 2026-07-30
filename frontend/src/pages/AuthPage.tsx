@@ -42,7 +42,7 @@ export function AuthPage() {
     <div className="map-border" aria-hidden="true" />
     <section className="auth-content ink-reveal" aria-labelledby="auth-title">
       <p className="eyebrow">The next chapter awaits</p>
-      <h1 id="auth-title">{mode === "login" ? "Welcome back." : "Make your mark."}</h1>
+      <h1 id="auth-title">{mode === "login" ? "Welcome back, Tomey!" : "Make your mark."}</h1>
       <p className="auth-intro">{mode === "login" ? "Sign in and pick up where the last chapter left off." : "Create your reader profile and join the conversation."}</p>
       <div className="auth-tabs"><button type="button" className={mode === "login" ? "active" : ""} onClick={() => setMode("login")}>Sign in</button><button type="button" className={mode === "register" ? "active" : ""} onClick={() => setMode("register")}>Create account</button></div>
         <form className="auth-form" onSubmit={submit}>
