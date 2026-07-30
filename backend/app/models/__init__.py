@@ -4,6 +4,7 @@ from app.models.club_reading import ClubReading  # noqa: F401
 from app.models.discussion_note import DiscussionNote  # noqa: F401
 from app.models.join_request import ClubJoinRequest  # noqa: F401
 from app.models.membership import ClubMembership  # noqa: F401
+from app.models.notification_settings import UserNotificationSettings  # noqa: F401
 from app.models.reading_entry import ReadingEntry  # noqa: F401
 from app.models.reading_note import ReadingNote  # noqa: F401
 from app.models.suggestion import BookSuggestion  # noqa: F401

@@ -78,4 +78,5 @@ def list_suggestions(
     return get_club_suggestions(
         db,
         club_id,
+        current_user.id,
     )

@@ -23,6 +23,7 @@ class DiscussionNoteResponse(BaseModel):
 
     created_at: datetime
     updated_at: datetime
+    author_display_name: str | None = None
 
     model_config = ConfigDict(
         from_attributes=True,

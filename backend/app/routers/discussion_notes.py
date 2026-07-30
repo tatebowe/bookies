@@ -12,6 +12,7 @@ from app.schemas.discussion_note import (
 from app.services.discussion_note_service import (
     create_discussion_note,
     delete_discussion_note,
+    get_cycle_discussion_notes,
     get_discussion_note_by_id,
     get_discussion_notes,
     update_discussion_note,
@@ -56,6 +57,17 @@ def list_notes(
         reading_id,
         current_user.id,
     )
+
+
+@router.get(
+    "/cycles/{cycle_id}/discussion-notes", response_model=list[DiscussionNoteResponse]
+)
+def list_cycle_notes(
+    cycle_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return get_cycle_discussion_notes(db, cycle_id, current_user.id)
 
 
 @router.patch(

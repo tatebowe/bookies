@@ -6,8 +6,10 @@ from app.models.club import Club
 from app.models.club_reading import ClubReading
 from app.models.discussion_note import DiscussionNote
 from app.models.membership import ClubMembership
+from app.models.suggestion import BookSuggestion
 from app.models.voting_cycle import VotingCycle
 from app.services.helpers import get_by_id
+from app.services.voting_cycle_service import get_open_participation_cycle
 
 
 def get_club_dashboard(
@@ -18,8 +20,14 @@ def get_club_dashboard(
     """
     Return dashboard data for a club.
 
-    User must be a club member.
+    Public clubs can be browsed by signed-in readers; private clubs require membership.
     """
+
+    club = get_by_id(
+        db,
+        Club,
+        club_id,
+    )
 
     membership = (
         db.query(ClubMembership)
@@ -30,14 +38,8 @@ def get_club_dashboard(
         .first()
     )
 
-    if membership is None:
+    if membership is None and not club.is_public:
         raise NotClubMemberError("User is not a member of this club")
-
-    club = get_by_id(
-        db,
-        Club,
-        club_id,
-    )
 
     active_cycle = (
         db.query(VotingCycle)
@@ -48,6 +50,18 @@ def get_club_dashboard(
         .first()
     )
 
+    future_cycles = (
+        db.query(VotingCycle)
+        .filter(
+            VotingCycle.club_id == club_id,
+            VotingCycle.active.is_(False),
+            VotingCycle.phase == "suggestion",
+        )
+        .order_by(VotingCycle.suggestion_start_date)
+        .all()
+    )
+    participation_cycle = get_open_participation_cycle(db, club_id)
+
     current_book = None
 
     if active_cycle and active_cycle.selected_book_id:
@@ -56,8 +70,23 @@ def get_club_dashboard(
             Book,
             active_cycle.selected_book_id,
         )
+        winning_suggestion = (
+            db.query(BookSuggestion)
+            .filter(
+                BookSuggestion.club_id == club_id,
+                BookSuggestion.cycle_id == active_cycle.id,
+                BookSuggestion.book_id == active_cycle.selected_book_id,
+            )
+            .first()
+        )
+        if winning_suggestion and current_book:
+            current_book.suggested_by_display_name = (
+                winning_suggestion.suggested_by.display_name
+                or winning_suggestion.suggested_by.username
+            )
 
     readings = []
+    viewer_club_reading_id = None
 
     if active_cycle:
         readings = (
@@ -68,6 +97,10 @@ def get_club_dashboard(
             )
             .all()
         )
+        viewer_reading = next(
+            (reading for reading in readings if reading.user_id == user_id), None
+        )
+        viewer_club_reading_id = viewer_reading.id if viewer_reading else None
 
     progress = {
         "not_started": 0,
@@ -90,11 +123,12 @@ def get_club_dashboard(
 
     members = []
 
-    for membership in memberships:
+    for member_membership in memberships:
         members.append(
             {
-                "username": membership.user.username,
-                "role": membership.role,
+                "username": member_membership.user.username,
+                "display_name": member_membership.user.display_name,
+                "role": member_membership.role,
             }
         )
 
@@ -123,6 +157,9 @@ def get_club_dashboard(
             if active_cycle
             else None
         ),
+        "participation_cycle": participation_cycle,
+        "future_cycles": future_cycles,
         "discussion_notes_count": discussion_count,
-        "viewer_role": membership.role,
+        "viewer_role": membership.role if membership else "",
+        "viewer_club_reading_id": viewer_club_reading_id,
     }

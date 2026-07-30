@@ -9,9 +9,10 @@ from app.exceptions.suggestion_exceptions import (
 )
 from app.models.book import Book
 from app.models.suggestion import BookSuggestion
+from app.models.vote import BookVote
 from app.services.helpers import get_by_id, save_and_refresh
 from app.services.permission_service import require_club_member
-from app.services.voting_cycle_service import get_active_cycle
+from app.services.voting_cycle_service import get_open_participation_cycle
 
 
 def create_suggestion(
@@ -31,7 +32,7 @@ def create_suggestion(
         user_id,
     )
 
-    cycle = get_active_cycle(
+    cycle = get_open_participation_cycle(
         db,
         club_id,
     )
@@ -100,15 +101,13 @@ def create_suggestion(
 def get_club_suggestions(
     db: Session,
     club_id: int,
+    user_id: int,
 ) -> list[BookSuggestion]:
     """
     Get suggestions for the current voting cycle.
     """
 
-    cycle = get_active_cycle(
-        db,
-        club_id,
-    )
+    cycle = get_open_participation_cycle(db, club_id)
 
     if cycle is None:
         return []
@@ -122,10 +121,18 @@ def get_club_suggestions(
         .all()
     )
 
+    viewer_vote_count = (
+        db.query(BookVote)
+        .filter(BookVote.cycle_id == cycle.id, BookVote.user_id == user_id)
+        .count()
+    )
+    can_view_vote_totals = cycle.phase != "suggestion" and (
+        cycle.phase != "voting" or viewer_vote_count > 0
+    )
+
     for suggestion in suggestions:
-        suggestion.vote_count = len(
-            suggestion.votes,
-        )
+        suggestion.can_view_vote_totals = can_view_vote_totals
+        suggestion.vote_count = len(suggestion.votes) if can_view_vote_totals else 0
 
     return suggestions
 

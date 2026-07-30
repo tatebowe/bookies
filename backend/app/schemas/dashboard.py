@@ -73,6 +73,8 @@ class DashboardHistoryItem(BaseModel):
     status: str
     rating: float | None = None
     review: str | None = None
+    finished_at: datetime | None = None
+    finished_at: datetime | None = None
     book: DashboardBook
     club: DashboardClub | None = None
 

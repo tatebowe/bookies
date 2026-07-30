@@ -52,6 +52,26 @@ def get_user_dashboard(
             }
         )
 
+    club_readings = db.query(ClubReading).filter(ClubReading.user_id == user_id).all()
+    needs_sync = False
+    for club_reading in club_readings:
+        entry = club_reading.reading_entry
+        if entry is None:
+            continue
+        if entry.status != club_reading.status:
+            entry.status = club_reading.status
+            entry.started_at = club_reading.started_at or entry.started_at
+            entry.finished_at = club_reading.finished_at or entry.finished_at
+            needs_sync = True
+        if club_reading.rating is not None and entry.rating != club_reading.rating:
+            entry.rating = club_reading.rating
+            needs_sync = True
+        if club_reading.review is not None and entry.review != club_reading.review:
+            entry.review = club_reading.review
+            needs_sync = True
+    if needs_sync:
+        db.commit()
+
     reading_entries = (
         db.query(ReadingEntry)
         .filter(
@@ -74,6 +94,7 @@ def get_user_dashboard(
                 "status": entry.status,
                 "rating": entry.rating,
                 "review": entry.review,
+                "finished_at": entry.finished_at,
                 "book": entry.book,
                 "club": club_reading.club if club_reading else None,
                 "club_reading_id": club_reading.id if club_reading else None,
@@ -102,6 +123,7 @@ def get_user_dashboard(
                 "status": entry.status,
                 "rating": entry.rating,
                 "review": entry.review,
+                "finished_at": entry.finished_at,
                 "book": entry.book,
                 "club": club_reading.club if club_reading else None,
             }

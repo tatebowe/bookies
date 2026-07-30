@@ -10,7 +10,7 @@ from app.services.club_service import get_club_by_id
 from app.services.helpers import save_and_refresh
 from app.services.permission_service import require_club_member
 from app.services.suggestion_service import get_suggestion_by_id
-from app.services.voting_cycle_service import get_active_cycle
+from app.services.voting_cycle_service import get_open_participation_cycle
 
 
 def get_user_vote_count(
@@ -69,7 +69,7 @@ def cast_vote(
         suggestion_id,
     )
 
-    cycle = get_active_cycle(
+    cycle = get_open_participation_cycle(
         db,
         suggestion.club_id,
     )

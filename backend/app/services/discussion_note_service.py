@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from sqlalchemy.orm import Session
 
 from app.exceptions.discussion_note_exceptions import (
@@ -6,6 +8,8 @@ from app.exceptions.discussion_note_exceptions import (
 )
 from app.models.club_reading import ClubReading
 from app.models.discussion_note import DiscussionNote
+from app.models.membership import ClubMembership
+from app.models.voting_cycle import VotingCycle
 from app.services.helpers import get_by_id, save_and_refresh
 
 
@@ -87,6 +91,43 @@ def get_discussion_notes(
         )
         .all()
     )
+
+
+def get_cycle_discussion_notes(
+    db: Session, cycle_id: int, user_id: int
+) -> list[DiscussionNote]:
+    cycle = get_by_id(db, VotingCycle, cycle_id)
+    if cycle is None:
+        return []
+    membership = (
+        db.query(ClubMembership)
+        .filter(
+            ClubMembership.club_id == cycle.club_id, ClubMembership.user_id == user_id
+        )
+        .first()
+    )
+    if membership is None:
+        raise UnauthorizedDiscussionNoteError(
+            "User is not authorized to view these discussion notes"
+        )
+    discussion_date = (
+        cycle.discussion_date.replace(tzinfo=timezone.utc)
+        if cycle.discussion_date.tzinfo is None
+        else cycle.discussion_date
+    )
+    query = (
+        db.query(DiscussionNote)
+        .join(ClubReading)
+        .filter(ClubReading.cycle_id == cycle_id)
+    )
+    if datetime.now(timezone.utc) < discussion_date:
+        query = query.filter(ClubReading.user_id == user_id)
+    notes = query.order_by(DiscussionNote.created_at).all()
+    for note in notes:
+        note.author_display_name = (
+            note.club_reading.user.display_name or note.club_reading.user.username
+        )
+    return notes
 
 
 def get_discussion_note_by_id(

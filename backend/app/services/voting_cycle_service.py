@@ -187,6 +187,36 @@ def get_active_cycle(
     )
 
 
+def get_open_participation_cycle(db: Session, club_id: int) -> VotingCycle | None:
+    """
+    Return the newest cycle currently accepting suggestions or votes.
+
+    This lets the next cycle open while the previous cycle is still
+    in its reading phase.
+    """
+
+    now = datetime.now(timezone.utc)
+    cycles = (
+        db.query(VotingCycle)
+        .filter(
+            VotingCycle.club_id == club_id,
+            VotingCycle.suggestion_start_date <= now,
+            VotingCycle.voting_end_date > now,
+        )
+        .order_by(VotingCycle.suggestion_start_date.desc())
+        .all()
+    )
+    if not cycles:
+        return None
+    cycle = cycles[0]
+    phase = "suggestion" if now < ensure_utc(cycle.voting_start_date) else "voting"
+    if cycle.phase != phase:
+        cycle.phase = phase
+        db.commit()
+        db.refresh(cycle)
+    return cycle
+
+
 def create_voting_cycle(
     db: Session,
     club_id: int,
@@ -221,9 +251,11 @@ def create_voting_cycle(
         club_id,
     )
 
-    if existing_cycle and suggestion_start_date < existing_cycle.discussion_date:
+    if existing_cycle and ensure_utc(suggestion_start_date) < ensure_utc(
+        existing_cycle.voting_end_date
+    ):
         raise ActiveVotingCycleExistsError(
-            "The next cycle must start after the active cycle discussion",
+            "The next cycle must start after the active cycle voting ends",
         )
 
     cycle = VotingCycle(

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.auth.dependencies import get_current_user
 from app.dependencies import get_db
+from app.exceptions.moderation_exceptions import NameNotAllowedError
 from app.models.club import Club
 from app.models.membership import ClubMembership
 from app.models.user import User
@@ -39,11 +40,14 @@ def create_new_club(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return create_club(
-        db,
-        club,
-        current_user,
-    )
+    try:
+        return create_club(
+            db,
+            club,
+            current_user,
+        )
+    except NameNotAllowedError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @router.get(
@@ -114,6 +118,7 @@ def update_member_role(
             status_code=400, detail="The club owner role cannot be changed"
         )
     membership.role = update.role
+    save_and_refresh(db, membership)
     return {"message": "Member role updated", "role": membership.role}
 
 

@@ -20,6 +20,7 @@ class ClubDashboardBook(BaseModel):
     id: int
     title: str
     authors: str | None = None
+    suggested_by_display_name: str | None = None
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -34,6 +35,7 @@ class DashboardProgress(BaseModel):
 
 class DashboardMember(BaseModel):
     username: str
+    display_name: str | None = None
     role: str
 
     model_config = ConfigDict(
@@ -43,6 +45,7 @@ class DashboardMember(BaseModel):
 
 class DashboardCycle(BaseModel):
     id: int
+    name: str | None = None
     phase: str
     active: bool
     voting_end_date: datetime | None = None
@@ -66,9 +69,12 @@ class ClubDashboardResponse(BaseModel):
     members: list[DashboardMember]
 
     active_cycle: DashboardCycle | None = None
+    participation_cycle: DashboardCycle | None = None
+    future_cycles: list[DashboardCycle] = []
 
     discussion_notes_count: int
     viewer_role: str
+    viewer_club_reading_id: int | None = None
 
     model_config = ConfigDict(
         from_attributes=True,

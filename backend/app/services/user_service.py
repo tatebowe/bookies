@@ -1,3 +1,4 @@
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.exceptions.user_exceptions import UserAlreadyExistsError
@@ -5,6 +6,7 @@ from app.models.user import User
 from app.schemas.user import UserCreate
 from app.security import hash_password, verify_password
 from app.services.helpers import exists, get_by_id, save_and_refresh
+from app.services.name_moderation_service import ensure_allowed_name
 
 
 def register_user(
@@ -18,6 +20,10 @@ def register_user(
         UserAlreadyExistsError:
             If the username or email already exists.
     """
+
+    ensure_allowed_name(user.username, "username")
+    if user.display_name:
+        ensure_allowed_name(user.display_name, "display name")
 
     if exists(
         db,
@@ -89,13 +95,19 @@ def get_user_by_id(
 
 def authenticate_user(
     db: Session,
-    email: str,
+    identifier: str,
     password: str,
 ) -> User | None:
 
-    user = get_user_by_email(
-        db,
-        email,
+    user = (
+        db.query(User)
+        .filter(
+            or_(
+                User.email == identifier,
+                User.username == identifier,
+            )
+        )
+        .first()
     )
 
     if user is None:
@@ -123,6 +135,11 @@ def create_google_user(
     Create a user from Google OAuth information.
     """
 
+    username = email.split("@")[0]
+    ensure_allowed_name(username, "username")
+    if display_name:
+        ensure_allowed_name(display_name, "display name")
+
     existing_email = get_user_by_email(
         db,
         email,
@@ -132,7 +149,7 @@ def create_google_user(
         raise UserAlreadyExistsError("A user with this email already exists")
 
     new_user = User(
-        username=email.split("@")[0],
+        username=username,
         display_name=display_name,
         email=email,
         google_id=google_id,

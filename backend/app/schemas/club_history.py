@@ -15,6 +15,7 @@ class HistoryBook(BaseModel):
 
 class CycleHistoryItem(BaseModel):
     cycle_id: int
+    cycle_name: str | None = None
     book: HistoryBook
 
     start_date: datetime
@@ -22,6 +23,7 @@ class CycleHistoryItem(BaseModel):
 
     members_started: int
     members_completed: int
+    discussion_notes_count: int = 0
 
 
 class ClubHistoryResponse(BaseModel):

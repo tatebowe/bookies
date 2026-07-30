@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.auth.google import verify_google_token
 from app.auth.jwt import create_access_token
 from app.dependencies import get_db
+from app.exceptions.moderation_exceptions import NameNotAllowedError
 from app.schemas.auth import TokenResponse
 from app.services.user_service import (
     authenticate_user,
@@ -72,10 +73,13 @@ def google_login(
             detail="Invalid Google token",
         )
 
-    user = get_or_create_google_user(
-        db,
-        google_user,
-    )
+    try:
+        user = get_or_create_google_user(
+            db,
+            google_user,
+        )
+    except NameNotAllowedError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
     access_token = create_access_token(
         {

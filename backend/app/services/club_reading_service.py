@@ -97,11 +97,24 @@ def update_reading_status(
 
     reading.status = status
 
+    if reading.reading_entry is not None:
+        reading.reading_entry.status = status
+
     if status == "reading" and reading.started_at is None:
         reading.started_at = datetime.utcnow()
+        if (
+            reading.reading_entry is not None
+            and reading.reading_entry.started_at is None
+        ):
+            reading.reading_entry.started_at = reading.started_at
 
     if status == "completed" and reading.finished_at is None:
         reading.finished_at = datetime.utcnow()
+        if (
+            reading.reading_entry is not None
+            and reading.reading_entry.finished_at is None
+        ):
+            reading.reading_entry.finished_at = reading.finished_at
 
     return save_and_refresh(
         db,
@@ -128,6 +141,10 @@ def update_reading_review(
 
     reading.rating = rating
     reading.review = review
+
+    if reading.reading_entry is not None:
+        reading.reading_entry.rating = rating
+        reading.reading_entry.review = review
 
     return save_and_refresh(
         db,

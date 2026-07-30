@@ -7,6 +7,7 @@ class BookSummary(BaseModel):
     id: int
     title: str
     authors: str | None
+    description: str | None = None
     thumbnail_url: str | None
 
     model_config = ConfigDict(
@@ -28,6 +29,7 @@ class BookSuggestionResponse(BaseModel):
     book: BookSummary
 
     vote_count: int = 0
+    can_view_vote_totals: bool = False
 
     model_config = ConfigDict(
         from_attributes=True,

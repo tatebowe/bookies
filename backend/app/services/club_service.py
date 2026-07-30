@@ -11,6 +11,7 @@ from app.models.membership import ClubMembership
 from app.models.user import User
 from app.schemas.club import ClubCreate
 from app.services.helpers import exists, get_by_id, save_and_refresh
+from app.services.name_moderation_service import ensure_allowed_name
 
 
 def create_club(
@@ -25,6 +26,8 @@ def create_club(
         ClubAlreadyExistsError:
             If a club with the same name exists.
     """
+
+    ensure_allowed_name(club.name, "club name")
 
     if exists(
         db,
