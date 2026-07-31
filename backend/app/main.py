@@ -3,7 +3,10 @@ from fastapi.responses import JSONResponse
 
 import app.models
 from app.database.database import Base, engine
-from app.exceptions.club_exceptions import ClubAlreadyExistsError
+from app.exceptions.club_exceptions import (
+    ClubAlreadyExistsError,
+    ClubNotFoundError,
+)
 from app.exceptions.club_history_exceptions import (
     ClubHistoryNotFoundError,
 )
@@ -24,6 +27,7 @@ from app.exceptions.join_request_exceptions import (
 )
 from app.exceptions.permission_exceptions import (
     NotClubAdminError,
+    NotClubMemberError,
     NotClubOwnerError,
 )
 from app.exceptions.reading_entry_exceptions import (
@@ -37,7 +41,6 @@ from app.exceptions.reading_note_exceptions import (
     UnauthorizedReadingNoteError,
 )
 from app.exceptions.suggestion_exceptions import (
-    NotClubMemberError,
     SuggestionAlreadyExistsError,
     SuggestionNotFoundError,
 )
@@ -240,6 +243,19 @@ def not_club_owner_handler(
 ):
     return JSONResponse(
         status_code=403,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(ClubNotFoundError)
+def club_not_found_handler(
+    request: Request,
+    exc: ClubNotFoundError,
+):
+    return JSONResponse(
+        status_code=404,
         content={
             "detail": str(exc),
         },

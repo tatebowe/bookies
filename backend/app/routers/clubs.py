@@ -23,7 +23,10 @@ from app.services.club_service import (
     search_public_clubs,
 )
 from app.services.helpers import save_and_refresh
-from app.services.permission_service import require_club_owner
+from app.services.permission_service import (
+    require_club_owner,
+    require_club_visibility,
+)
 
 router = APIRouter(
     prefix="/clubs",
@@ -73,6 +76,12 @@ def get_members(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    require_club_visibility(
+        db,
+        club_id,
+        current_user.id,
+    )
+
     return get_club_members(
         db,
         club_id,

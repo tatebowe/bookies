@@ -41,9 +41,11 @@ class ClubResponse(BaseModel):
 
 
 class ClubMemberResponse(BaseModel):
+    # No email here. A member roster is visible to every reader who can see
+    # the club, which is not an audience that should receive addresses.
     id: int
     username: str
-    email: str
+    display_name: str | None
 
     model_config = ConfigDict(
         from_attributes=True,

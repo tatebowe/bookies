@@ -1,10 +1,12 @@
 from sqlalchemy.orm import Session
 
+from app.exceptions.club_exceptions import ClubNotFoundError
 from app.exceptions.permission_exceptions import (
     NotClubAdminError,
     NotClubMemberError,
     NotClubOwnerError,
 )
+from app.models.club import Club
 from app.models.membership import ClubMembership
 
 
@@ -36,6 +38,40 @@ def require_club_member(
     )
 
     if membership is None:
+        raise NotClubMemberError("User is not a member of this club")
+
+    return membership
+
+
+def require_club_visibility(
+    db: Session,
+    club_id: int,
+    user_id: int,
+) -> ClubMembership | None:
+    """
+    Authorize reading a club's contents.
+
+    Public clubs can be browsed by any signed-in reader; private clubs
+    require membership. Returns the viewer's membership, or None when they
+    are browsing a public club they have not joined.
+
+    Raises:
+        ClubNotFoundError: If the club does not exist.
+        NotClubMemberError: If the club is private and the user is not a member.
+    """
+
+    club = db.get(Club, club_id)
+
+    if club is None:
+        raise ClubNotFoundError("Club not found")
+
+    membership = get_membership(
+        db,
+        club_id,
+        user_id,
+    )
+
+    if membership is None and not club.is_public:
         raise NotClubMemberError("User is not a member of this club")
 
     return membership
