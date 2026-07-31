@@ -118,8 +118,8 @@ export async function decideJoinRequest(requestId: number, approved: boolean, to
   return request(`/clubs/join-requests/${requestId}/${approved ? "approve" : "reject"}`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
 }
 
-export async function searchBooks(query: string): Promise<BookSearchResult[]> {
-  return request(`/books/search?q=${encodeURIComponent(query)}`);
+export async function searchBooks(query: string, token: string): Promise<BookSearchResult[]> {
+  return request(`/books/search?q=${encodeURIComponent(query)}`, { headers: { Authorization: `Bearer ${token}` } });
 }
 
 export async function addBookToReading(googleBooksId: string, token: string) {

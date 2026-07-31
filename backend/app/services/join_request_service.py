@@ -52,19 +52,29 @@ def request_to_join(
     Behavior depends on club join policy:
 
     open:
-        Immediately creates membership.
+        Immediately creates membership, but only for a public club.
 
     request:
         Creates a pending join request.
 
     invite:
         Rejects the request.
+
+    A private club never admits anyone automatically. is_public and
+    join_policy are independent fields, so "open" on a private club would
+    otherwise let anyone who guesses the sequential club id walk straight
+    in and read the roster, history, dashboard and discussion notes.
     """
 
     club = get_club_by_id(
         db,
         club_id,
     )
+
+    join_policy = club.join_policy
+
+    if join_policy == "open" and not club.is_public:
+        join_policy = "request"
 
     existing_membership = (
         db.query(ClubMembership)
@@ -78,7 +88,7 @@ def request_to_join(
     if existing_membership:
         raise JoinRequestAlreadyExistsError("User is already a member of this club")
 
-    if club.join_policy == "open":
+    if join_policy == "open":
         membership = ClubMembership(
             club_id=club_id,
             user_id=user_id,
@@ -98,7 +108,7 @@ def request_to_join(
 
         return membership
 
-    if club.join_policy == "invite":
+    if join_policy == "invite":
         raise InvalidJoinRequestError("This club requires an invitation to join")
 
     existing_request = (

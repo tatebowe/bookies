@@ -26,9 +26,12 @@ router = APIRouter(
 )
 def search_for_books(
     q: str,
+    current_user: User = Depends(get_current_user),
 ):
     """
     Search Google Books.
+
+    Authenticated because every call spends our Google Books quota.
     """
 
     return search_books(q)

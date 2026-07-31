@@ -4,12 +4,75 @@ import time
 import httpx
 
 from app.core.config import settings
-from app.exceptions.book_exceptions import InvalidGoogleBooksIdError
+from app.exceptions.book_exceptions import (
+    BookLookupUnavailableError,
+    InvalidGoogleBooksIdError,
+)
 from app.schemas.book import GOOGLE_BOOKS_ID_PATTERN
 
 GOOGLE_BOOKS_URL = "https://www.googleapis.com/books/v1/volumes"
 
 VOLUME_ID_RE = re.compile(GOOGLE_BOOKS_ID_PATTERN)
+
+TIMEOUT_SECONDS = 10
+
+RATE_LIMIT_RETRY_SECONDS = 2
+
+
+def request_json(
+    url: str,
+    params: dict,
+) -> dict:
+    """
+    Call Google Books and return the decoded body.
+
+    Raises:
+        BookLookupUnavailableError:
+            For any upstream problem — rate limiting, an error status, a
+            network failure, or an unreadable body. Callers get one failure
+            type to handle instead of a leaking httpx exception.
+    """
+
+    try:
+        response = httpx.get(
+            url,
+            params=params,
+            timeout=TIMEOUT_SECONDS,
+        )
+
+        # Retry once if Google rate limits us
+        if response.status_code == 429:
+            time.sleep(RATE_LIMIT_RETRY_SECONDS)
+
+            response = httpx.get(
+                url,
+                params=params,
+                timeout=TIMEOUT_SECONDS,
+            )
+
+        response.raise_for_status()
+
+        return response.json()
+
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 429:
+            raise BookLookupUnavailableError(
+                "Google Books is rate limiting us. Try again in a moment.",
+            ) from exc
+
+        raise BookLookupUnavailableError(
+            "Google Books rejected the request.",
+        ) from exc
+
+    except httpx.RequestError as exc:
+        raise BookLookupUnavailableError(
+            "Could not reach Google Books.",
+        ) from exc
+
+    except ValueError as exc:
+        raise BookLookupUnavailableError(
+            "Google Books returned an unreadable response.",
+        ) from exc
 
 
 def search_books(
@@ -25,25 +88,10 @@ def search_books(
     if settings.google_books_api_key:
         params["key"] = settings.google_books_api_key
 
-    response = httpx.get(
+    data = request_json(
         GOOGLE_BOOKS_URL,
-        params=params,
-        timeout=10,
+        params,
     )
-
-    # Retry once if Google rate limits us
-    if response.status_code == 429:
-        time.sleep(2)
-
-        response = httpx.get(
-            GOOGLE_BOOKS_URL,
-            params=params,
-            timeout=10,
-        )
-
-    response.raise_for_status()
-
-    data = response.json()
 
     return [parse_book(item) for item in data.get("items", [])]
 
@@ -74,16 +122,11 @@ def get_google_book_by_id(
     if settings.google_books_api_key:
         params["key"] = settings.google_books_api_key
 
-    response = httpx.get(
-        url,
-        params=params,
-        timeout=10,
-    )
-
-    response.raise_for_status()
-
     return parse_book(
-        response.json(),
+        request_json(
+            url,
+            params,
+        ),
     )
 
 
