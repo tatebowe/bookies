@@ -5,7 +5,11 @@ from app.auth.dependencies import get_current_user
 from app.dependencies import get_db
 from app.exceptions.moderation_exceptions import NameNotAllowedError
 from app.models.user import User
-from app.schemas.profile import ProfileResponse, ProfileUpdate
+from app.schemas.profile import (
+    ProfileResponse,
+    ProfileUpdate,
+    PublicProfileResponse,
+)
 from app.services.profile_service import (
     get_profile_by_username,
     get_profile_settings,
@@ -46,11 +50,12 @@ def update_my_profile(
 
 @router.get(
     "/{username}",
-    response_model=ProfileResponse,
+    response_model=PublicProfileResponse,
 )
 def get_profile(
     username: str,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     return get_profile_by_username(
         db,

@@ -14,3 +14,9 @@ class InvalidCredentialsError(Exception):
     """Raised when login credentials are incorrect."""
 
     pass
+
+
+class UnverifiedEmailError(Exception):
+    """Raised when an identity provider vouches for an unverified address."""
+
+    pass

@@ -3,7 +3,14 @@ from fastapi.responses import JSONResponse
 
 import app.models
 from app.database.database import Base, engine
-from app.exceptions.club_exceptions import ClubAlreadyExistsError
+from app.exceptions.book_exceptions import (
+    BookLookupUnavailableError,
+    InvalidGoogleBooksIdError,
+)
+from app.exceptions.club_exceptions import (
+    ClubAlreadyExistsError,
+    ClubNotFoundError,
+)
 from app.exceptions.club_history_exceptions import (
     ClubHistoryNotFoundError,
 )
@@ -17,6 +24,12 @@ from app.exceptions.discussion_note_exceptions import (
     DiscussionNoteNotFoundError,
     UnauthorizedDiscussionNoteError,
 )
+from app.exceptions.invitation_exceptions import (
+    InvalidInvitationError,
+    InvitationAlreadyExistsError,
+    InvitationNotFoundError,
+    UnauthorizedInvitationError,
+)
 from app.exceptions.join_request_exceptions import (
     InvalidJoinRequestError,
     JoinRequestAlreadyExistsError,
@@ -24,6 +37,7 @@ from app.exceptions.join_request_exceptions import (
 )
 from app.exceptions.permission_exceptions import (
     NotClubAdminError,
+    NotClubMemberError,
     NotClubOwnerError,
 )
 from app.exceptions.reading_entry_exceptions import (
@@ -37,7 +51,6 @@ from app.exceptions.reading_note_exceptions import (
     UnauthorizedReadingNoteError,
 )
 from app.exceptions.suggestion_exceptions import (
-    NotClubMemberError,
     SuggestionAlreadyExistsError,
     SuggestionNotFoundError,
 )
@@ -64,6 +77,7 @@ from app.routers import (
     clubs,
     dashboard,
     discussion_notes,
+    invitations,
     join_requests,
     profiles,
     reading_entries,
@@ -246,6 +260,45 @@ def not_club_owner_handler(
     )
 
 
+@app.exception_handler(BookLookupUnavailableError)
+def book_lookup_unavailable_handler(
+    request: Request,
+    exc: BookLookupUnavailableError,
+):
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(InvalidGoogleBooksIdError)
+def invalid_google_books_id_handler(
+    request: Request,
+    exc: InvalidGoogleBooksIdError,
+):
+    return JSONResponse(
+        status_code=400,
+        content={
+            "detail": "Invalid Google Books volume ID",
+        },
+    )
+
+
+@app.exception_handler(ClubNotFoundError)
+def club_not_found_handler(
+    request: Request,
+    exc: ClubNotFoundError,
+):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
 @app.exception_handler(ClubAlreadyExistsError)
 def club_already_exists_handler(
     request: Request,
@@ -303,6 +356,58 @@ def health_check():
     return {
         "status": "healthy",
     }
+
+
+@app.exception_handler(InvitationNotFoundError)
+def invitation_not_found_handler(
+    request: Request,
+    exc: InvitationNotFoundError,
+):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(InvitationAlreadyExistsError)
+def invitation_exists_handler(
+    request: Request,
+    exc: InvitationAlreadyExistsError,
+):
+    return JSONResponse(
+        status_code=409,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(InvalidInvitationError)
+def invalid_invitation_handler(
+    request: Request,
+    exc: InvalidInvitationError,
+):
+    return JSONResponse(
+        status_code=400,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(UnauthorizedInvitationError)
+def unauthorized_invitation_handler(
+    request: Request,
+    exc: UnauthorizedInvitationError,
+):
+    return JSONResponse(
+        status_code=403,
+        content={
+            "detail": str(exc),
+        },
+    )
 
 
 @app.exception_handler(JoinRequestAlreadyExistsError)
@@ -486,6 +591,7 @@ app.include_router(
 app.include_router(voting_cycles.router)
 app.include_router(suggestions.router)
 app.include_router(votes.router)
+app.include_router(invitations.router)
 app.include_router(join_requests.router)
 app.include_router(club_readings.router)
 app.include_router(discussion_notes.router)

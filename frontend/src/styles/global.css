@@ -245,6 +245,16 @@ body { margin: 0; min-width: 320px; }
 .request-row { align-items: center; border-bottom: 1px dashed rgba(29, 12, 5, .25); display: flex; gap: .45rem; padding: .55rem 0; }
 .request-row span { flex: 1; font-size: 1rem; }
 .request-row button { background: transparent; border: 1px solid #1d0c05; color: #1d0c05; cursor: pointer; font-family: "Special Elite", monospace; font-size: .52rem; padding: .4rem .45rem; text-transform: uppercase; }
+.request-list { margin-top: 1rem; }
+.dashboard-invitations { background: rgba(255, 241, 201, .46); border: 1px solid rgba(29, 12, 5, .36); margin: 0 0 1.5rem; max-width: 650px; padding: 1.1rem; }
+.invitation-row { align-items: center; border-bottom: 1px dashed rgba(29, 12, 5, .25); display: flex; flex-wrap: wrap; gap: .6rem; padding: .6rem 0; }
+.invitation-row:last-of-type { border-bottom: 0; }
+.invitation-row p { display: grid; flex: 1; gap: .15rem; margin: 0; min-width: 12rem; }
+.invitation-row strong { font-family: "IM Fell English", Georgia, serif; font-size: 1.35rem; font-weight: 400; }
+.invitation-row small { font-family: "Special Elite", monospace; font-size: .55rem; letter-spacing: .04em; text-transform: uppercase; }
+.invitation-actions { display: flex; gap: .45rem; }
+.invitation-actions button { background: #1d0c05; border: 1px solid #1d0c05; color: #f2d99e; cursor: pointer; font-family: "Special Elite", monospace; font-size: .55rem; letter-spacing: .04em; padding: .45rem .7rem; text-transform: uppercase; }
+.invitation-actions .quiet-button { background: transparent; color: #1d0c05; margin-top: 0; }
 .search-hero { max-width: 720px; padding: clamp(1.25rem, 3vw, 2rem) 0 2rem; }
 .search-hero h1 { font-family: "IM Fell English", Georgia, serif; font-size: clamp(3.5rem, 7vw, 5.5rem); font-weight: 400; line-height: .9; margin: .7rem 0 1.5rem; }
 .search-hero form { display: flex; max-width: 600px; }

@@ -42,7 +42,7 @@ export async function login(emailOrUsername: string, password: string) {
 }
 
 export async function googleLogin(idToken: string) {
-  return request(`/auth/google?token=${encodeURIComponent(idToken)}`, { method: "POST" });
+  return request("/auth/google", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: idToken }) });
 }
 
 export async function register(input: { username: string; email: string; password: string; display_name: string }) {
@@ -110,6 +110,28 @@ export async function updateMemberRole(clubId: string, username: string, role: "
   return request(`/clubs/${clubId}/members/${encodeURIComponent(username)}/role`, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ role }) });
 }
 
+export type Invitation = { id: number; club_id: number; club_name: string; invited_by_username: string; status: string; created_at: string };
+export type ClubInvitation = { id: number; club_id: number; invited_username: string; invited_display_name: string | null; status: string; created_at: string };
+
+export async function getMyInvitations(token: string): Promise<Invitation[]> {
+  return request("/invitations", { headers: { Authorization: `Bearer ${token}` } });
+}
+export async function acceptInvitation(invitationId: number, token: string): Promise<Invitation> {
+  return request(`/invitations/${invitationId}/accept`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+}
+export async function declineInvitation(invitationId: number, token: string): Promise<Invitation> {
+  return request(`/invitations/${invitationId}/decline`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+}
+export async function getClubInvitations(clubId: string, token: string): Promise<ClubInvitation[]> {
+  return request(`/clubs/${clubId}/invitations`, { headers: { Authorization: `Bearer ${token}` } });
+}
+export async function inviteMember(clubId: string, username: string, token: string): Promise<ClubInvitation> {
+  return request(`/clubs/${clubId}/invitations`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ username }) });
+}
+export async function revokeInvitation(invitationId: number, token: string) {
+  return request(`/invitations/${invitationId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+}
+
 export type JoinRequest = { id: number; club_id: number; user_id: number; status: string; created_at: string };
 export async function getJoinRequests(clubId: string, token: string): Promise<JoinRequest[]> {
   return request(`/clubs/${clubId}/join-requests`, { headers: { Authorization: `Bearer ${token}` } });
@@ -118,8 +140,8 @@ export async function decideJoinRequest(requestId: number, approved: boolean, to
   return request(`/clubs/join-requests/${requestId}/${approved ? "approve" : "reject"}`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
 }
 
-export async function searchBooks(query: string): Promise<BookSearchResult[]> {
-  return request(`/books/search?q=${encodeURIComponent(query)}`);
+export async function searchBooks(query: string, token: string): Promise<BookSearchResult[]> {
+  return request(`/books/search?q=${encodeURIComponent(query)}`, { headers: { Authorization: `Bearer ${token}` } });
 }
 
 export async function addBookToReading(googleBooksId: string, token: string) {

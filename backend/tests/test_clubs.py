@@ -92,7 +92,7 @@ def test_get_club_members(client, auth_headers):
 
     assert len(members) == 1
     assert members[0]["username"] == "testuser"
-    assert members[0]["email"] == "test@example.com"
+    assert "email" not in members[0]
 
 
 def test_discover_public_clubs(

@@ -2,6 +2,7 @@ from app.models.book import Book  # noqa: F401
 from app.models.club import Club  # noqa: F401
 from app.models.club_reading import ClubReading  # noqa: F401
 from app.models.discussion_note import DiscussionNote  # noqa: F401
+from app.models.invitation import ClubInvitation  # noqa: F401
 from app.models.join_request import ClubJoinRequest  # noqa: F401
 from app.models.membership import ClubMembership  # noqa: F401
 from app.models.notification_settings import UserNotificationSettings  # noqa: F401

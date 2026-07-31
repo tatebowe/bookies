@@ -1,7 +1,39 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Dashboard, getDashboard, saveReadingNote, saveReadingReview, updateReadingStatus } from "../lib/api";
+import { acceptInvitation, Dashboard, declineInvitation, getDashboard, getMyInvitations, Invitation, saveReadingNote, saveReadingReview, updateReadingStatus } from "../lib/api";
 import { AppHeader } from "../components/AppHeader";
+
+function InvitationsBanner({ onAccepted }: { onAccepted: () => void }) {
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+
+  const refresh = () => { const token = localStorage.getItem("tomeys_token"); if (token) getMyInvitations(token).then(setInvitations).catch(() => undefined); };
+  useEffect(refresh, []);
+
+  async function respond(invitation: Invitation, accepted: boolean) {
+    const token = localStorage.getItem("tomeys_token");
+    if (!token) return;
+    setBusy(true); setMessage("");
+    try {
+      if (accepted) {
+        await acceptInvitation(invitation.id, token);
+        setMessage(`You joined ${invitation.club_name}.`);
+        onAccepted();
+        navigate(`/clubs/${invitation.club_id}`);
+      } else {
+        await declineInvitation(invitation.id, token);
+        setMessage(`Invitation to ${invitation.club_name} declined.`);
+      }
+      setInvitations((current) => current.filter((item) => item.id !== invitation.id));
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Could not answer that invitation."); } finally { setBusy(false); }
+  }
+
+  if (!invitations.length && !message) return null;
+
+  return <section className="dashboard-invitations"><p className="eyebrow">Club invitations</p>{invitations.map((invitation) => <div className="invitation-row" key={invitation.id}><p><strong>{invitation.club_name}</strong><small>Invited by {invitation.invited_by_username}</small></p><div className="invitation-actions"><button disabled={busy} onClick={() => respond(invitation, true)}>Accept</button><button className="quiet-button" disabled={busy} onClick={() => respond(invitation, false)}>Decline</button></div></div>)}{message && <p className="reading-message">{message}</p>}</section>;
+}
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -48,6 +80,7 @@ export function DashboardPage() {
   return <main className="dashboard-page">
     <AppHeader greeting={`Welcome, ${name}`} />
     <section className="dashboard-hero"><p className="eyebrow">Your reading room</p><h1>Good to see you, {name}.</h1><p>Keep your club, current chapter, and notes all within reach.</p></section>
+    <InvitationsBanner onAccepted={refreshDashboard} />
     <section className="dashboard-grid">
       <article className="dashboard-card current-card"><CardHeading label="On your nightstand" count={`${dashboard.current_readings.length} active`} />{dashboard.current_readings.length ? dashboard.current_readings.map((reading) => <div className="reading-item" key={reading.id}><div className="reading-row"><div className="book-spine" /><div><h2>{reading.book.title}</h2><p>{reading.book.authors || "Author unknown"}{reading.club ? ` · ${reading.club.name}` : " · personal reading"}</p></div><span className="status-pill">{reading.status.replaceAll("_", " ")}</span></div><ReadingActions reading={reading} onSaved={refreshDashboard} /></div>) : <EmptyState text="No book in progress yet. Your club’s next pick will appear here." />}</article>
       <article className="dashboard-card clubs-card"><CardHeading label="Your clubs" count={`${dashboard.clubs.length} joined`} />{dashboard.clubs.length ? dashboard.clubs.map(({ club, role, active_cycle }) => <div className="club-row" key={club.id}><div className="club-monogram">{club.name.charAt(0)}</div><div><Link className="club-link" to={`/clubs/${club.id}`}>{club.name}</Link><p>{role}{active_cycle ? ` · ${active_cycle.phase.replaceAll("_", " ")}` : " · between reads"}</p></div></div>) : <><EmptyState text="Your first book club is waiting to be discovered." /><Link className="quiet-link" to="/clubs">Search clubs →</Link></>}</article>
