@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
 
-from app.exceptions.permission_exceptions import NotClubMemberError
 from app.models.book import Book
 from app.models.club import Club
 from app.models.club_reading import ClubReading
@@ -9,6 +8,7 @@ from app.models.membership import ClubMembership
 from app.models.suggestion import BookSuggestion
 from app.models.voting_cycle import VotingCycle
 from app.services.helpers import get_by_id
+from app.services.permission_service import require_club_visibility
 from app.services.voting_cycle_service import get_open_participation_cycle
 
 
@@ -23,23 +23,19 @@ def get_club_dashboard(
     Public clubs can be browsed by signed-in readers; private clubs require membership.
     """
 
+    # Raises ClubNotFoundError for an unknown id, which previously fell
+    # through to an AttributeError on club.is_public.
+    membership = require_club_visibility(
+        db,
+        club_id,
+        user_id,
+    )
+
     club = get_by_id(
         db,
         Club,
         club_id,
     )
-
-    membership = (
-        db.query(ClubMembership)
-        .filter(
-            ClubMembership.club_id == club_id,
-            ClubMembership.user_id == user_id,
-        )
-        .first()
-    )
-
-    if membership is None and not club.is_public:
-        raise NotClubMemberError("User is not a member of this club")
 
     active_cycle = (
         db.query(VotingCycle)
