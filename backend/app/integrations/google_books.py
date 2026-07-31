@@ -1,10 +1,15 @@
+import re
 import time
 
 import httpx
 
 from app.core.config import settings
+from app.exceptions.book_exceptions import InvalidGoogleBooksIdError
+from app.schemas.book import GOOGLE_BOOKS_ID_PATTERN
 
 GOOGLE_BOOKS_URL = "https://www.googleapis.com/books/v1/volumes"
+
+VOLUME_ID_RE = re.compile(GOOGLE_BOOKS_ID_PATTERN)
 
 
 def search_books(
@@ -48,7 +53,19 @@ def get_google_book_by_id(
 ) -> dict:
     """
     Retrieve a single book from Google Books by volume ID.
+
+    Raises:
+        InvalidGoogleBooksIdError:
+            If the ID is not an opaque alphanumeric token. It is interpolated
+            into the request path, so a value containing "../" would walk out
+            of /books/v1/volumes and reach an unrelated googleapis.com
+            endpoint with our API key attached.
     """
+
+    if not VOLUME_ID_RE.fullmatch(google_books_id):
+        raise InvalidGoogleBooksIdError(
+            f"Invalid Google Books volume ID: {google_books_id!r}",
+        )
 
     url = f"{GOOGLE_BOOKS_URL}/{google_books_id}"
 

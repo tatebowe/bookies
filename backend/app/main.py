@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 
 import app.models
 from app.database.database import Base, engine
+from app.exceptions.book_exceptions import InvalidGoogleBooksIdError
 from app.exceptions.club_exceptions import (
     ClubAlreadyExistsError,
     ClubNotFoundError,
@@ -245,6 +246,19 @@ def not_club_owner_handler(
         status_code=403,
         content={
             "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(InvalidGoogleBooksIdError)
+def invalid_google_books_id_handler(
+    request: Request,
+    exc: InvalidGoogleBooksIdError,
+):
+    return JSONResponse(
+        status_code=400,
+        content={
+            "detail": "Invalid Google Books volume ID",
         },
     )
 

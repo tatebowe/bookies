@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
+GOOGLE_BOOKS_ID_PATTERN = r"^[A-Za-z0-9_-]+$"
 
 
 class BookResponse(BaseModel):
@@ -36,4 +38,8 @@ class BookSearchResult(BaseModel):
 
 
 class BookCreate(BaseModel):
-    google_books_id: str
+    google_books_id: str = Field(
+        pattern=GOOGLE_BOOKS_ID_PATTERN,
+        min_length=1,
+        max_length=128,
+    )
