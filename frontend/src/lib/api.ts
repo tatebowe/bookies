@@ -42,7 +42,7 @@ export async function login(emailOrUsername: string, password: string) {
 }
 
 export async function googleLogin(idToken: string) {
-  return request(`/auth/google?token=${encodeURIComponent(idToken)}`, { method: "POST" });
+  return request("/auth/google", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: idToken }) });
 }
 
 export async function register(input: { username: string; email: string; password: string; display_name: string }) {

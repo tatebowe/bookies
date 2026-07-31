@@ -1,7 +1,10 @@
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from app.exceptions.user_exceptions import UserAlreadyExistsError
+from app.exceptions.user_exceptions import (
+    UnverifiedEmailError,
+    UserAlreadyExistsError,
+)
 from app.models.user import User
 from app.schemas.user import UserCreate
 from app.security import hash_password, verify_password
@@ -162,17 +165,41 @@ def create_google_user(
     )
 
 
+def is_verified_email(google_user: dict) -> bool:
+    """
+    Read Google's email_verified claim, which arrives as either a bool or
+    the string "true" depending on how the token was issued.
+    """
+
+    claim = google_user.get("email_verified")
+
+    if isinstance(claim, str):
+        return claim.strip().lower() == "true"
+
+    return claim is True
+
+
 def get_or_create_google_user(
     db: Session,
     google_user: dict,
 ) -> User:
     """
     Find an existing Google user or create one.
+
+    Raises:
+        UnverifiedEmailError:
+            If Google has not verified the address. Acting on an unverified
+            address would let someone claim an address they do not control.
     """
 
     google_id = google_user["sub"]
-    email = google_user["email"]
+    email = google_user.get("email")
     display_name = google_user.get("name")
+
+    if not email or not is_verified_email(google_user):
+        raise UnverifiedEmailError(
+            "Google account email is missing or unverified",
+        )
 
     user = get_user_by_google_id(
         db,

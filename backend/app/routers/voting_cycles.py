@@ -9,6 +9,7 @@ from app.schemas.voting_cycle import (
     VotingCycleResponse,
     VotingCycleUpdate,
 )
+from app.services.permission_service import require_club_member
 from app.services.voting_cycle_service import (
     close_voting_cycle,
     create_voting_cycle,
@@ -51,7 +52,14 @@ def create_cycle(
 def get_current_cycle(
     club_id: int,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
+    require_club_member(
+        db,
+        club_id,
+        user.id,
+    )
+
     return get_active_cycle(
         db,
         club_id,

@@ -6,7 +6,8 @@ from app.auth.google import verify_google_token
 from app.auth.jwt import create_access_token
 from app.dependencies import get_db
 from app.exceptions.moderation_exceptions import NameNotAllowedError
-from app.schemas.auth import TokenResponse
+from app.exceptions.user_exceptions import UnverifiedEmailError
+from app.schemas.auth import GoogleLoginRequest, TokenResponse
 from app.services.user_service import (
     authenticate_user,
     get_or_create_google_user,
@@ -56,7 +57,7 @@ def login(
     response_model=TokenResponse,
 )
 def google_login(
-    token: str,
+    payload: GoogleLoginRequest,
     db: Session = Depends(get_db),
 ):
     """
@@ -64,7 +65,7 @@ def google_login(
     """
 
     google_user = verify_google_token(
-        token,
+        payload.token,
     )
 
     if google_user is None:
@@ -77,6 +78,11 @@ def google_login(
         user = get_or_create_google_user(
             db,
             google_user,
+        )
+    except UnverifiedEmailError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(exc),
         )
     except NameNotAllowedError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
