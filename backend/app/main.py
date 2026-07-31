@@ -24,6 +24,12 @@ from app.exceptions.discussion_note_exceptions import (
     DiscussionNoteNotFoundError,
     UnauthorizedDiscussionNoteError,
 )
+from app.exceptions.invitation_exceptions import (
+    InvalidInvitationError,
+    InvitationAlreadyExistsError,
+    InvitationNotFoundError,
+    UnauthorizedInvitationError,
+)
 from app.exceptions.join_request_exceptions import (
     InvalidJoinRequestError,
     JoinRequestAlreadyExistsError,
@@ -71,6 +77,7 @@ from app.routers import (
     clubs,
     dashboard,
     discussion_notes,
+    invitations,
     join_requests,
     profiles,
     reading_entries,
@@ -351,6 +358,58 @@ def health_check():
     }
 
 
+@app.exception_handler(InvitationNotFoundError)
+def invitation_not_found_handler(
+    request: Request,
+    exc: InvitationNotFoundError,
+):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(InvitationAlreadyExistsError)
+def invitation_exists_handler(
+    request: Request,
+    exc: InvitationAlreadyExistsError,
+):
+    return JSONResponse(
+        status_code=409,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(InvalidInvitationError)
+def invalid_invitation_handler(
+    request: Request,
+    exc: InvalidInvitationError,
+):
+    return JSONResponse(
+        status_code=400,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+@app.exception_handler(UnauthorizedInvitationError)
+def unauthorized_invitation_handler(
+    request: Request,
+    exc: UnauthorizedInvitationError,
+):
+    return JSONResponse(
+        status_code=403,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
 @app.exception_handler(JoinRequestAlreadyExistsError)
 def join_request_exists_handler(
     request: Request,
@@ -532,6 +591,7 @@ app.include_router(
 app.include_router(voting_cycles.router)
 app.include_router(suggestions.router)
 app.include_router(votes.router)
+app.include_router(invitations.router)
 app.include_router(join_requests.router)
 app.include_router(club_readings.router)
 app.include_router(discussion_notes.router)

@@ -68,6 +68,19 @@ def get_user_by_email(
     )
 
 
+def get_user_by_username(
+    db: Session,
+    username: str,
+) -> User | None:
+    return (
+        db.query(User)
+        .filter(
+            User.username == username,
+        )
+        .first()
+    )
+
+
 def get_user_by_google_id(
     db: Session,
     google_id: str,

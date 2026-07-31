@@ -9,36 +9,13 @@ from app.exceptions.join_request_exceptions import (
 )
 from app.models.join_request import ClubJoinRequest
 from app.models.membership import ClubMembership
-from app.services.club_reading_service import create_reading_for_member
 from app.services.club_service import get_club_by_id
 from app.services.helpers import get_by_id, save_and_refresh
+from app.services.membership_service import (
+    add_current_reading_if_available,  # noqa: F401  (re-exported for callers)
+    grant_membership,
+)
 from app.services.permission_service import require_club_admin
-from app.services.voting_cycle_service import get_active_cycle
-
-
-def add_current_reading_if_available(
-    db: Session,
-    club_id: int,
-    user_id: int,
-) -> None:
-    """
-    If the club currently has an active reading cycle,
-    create a reading record for the new member.
-    """
-
-    cycle = get_active_cycle(
-        db,
-        club_id,
-    )
-
-    if cycle and cycle.phase == "reading" and cycle.selected_book_id:
-        create_reading_for_member(
-            db,
-            club_id,
-            cycle.id,
-            cycle.selected_book_id,
-            user_id,
-        )
 
 
 def request_to_join(
@@ -89,24 +66,11 @@ def request_to_join(
         raise JoinRequestAlreadyExistsError("User is already a member of this club")
 
     if join_policy == "open":
-        membership = ClubMembership(
-            club_id=club_id,
-            user_id=user_id,
-            role="member",
-        )
-
-        save_and_refresh(
-            db,
-            membership,
-        )
-
-        add_current_reading_if_available(
+        return grant_membership(
             db,
             club_id,
             user_id,
         )
-
-        return membership
 
     if join_policy == "invite":
         raise InvalidJoinRequestError("This club requires an invitation to join")
@@ -204,18 +168,7 @@ def approve_join_request(
     if join_request.status != "pending":
         raise InvalidJoinRequestError("Join request has already been processed")
 
-    membership = ClubMembership(
-        club_id=join_request.club_id,
-        user_id=join_request.user_id,
-        role="member",
-    )
-
-    save_and_refresh(
-        db,
-        membership,
-    )
-
-    add_current_reading_if_available(
+    grant_membership(
         db,
         join_request.club_id,
         join_request.user_id,

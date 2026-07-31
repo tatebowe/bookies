@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { castSuggestionVote, ClubDashboard, ClubHistory, createCycle, createDiscussionNote, decideJoinRequest, DiscussionNote, getClubDashboard, getClubHistory, getCycleDiscussionNotes, getDashboard, getJoinRequests, getSuggestions, JoinRequest, Suggestion, updateClubSettings, updateCycle, updateMemberRole } from "../lib/api";
+import { castSuggestionVote, ClubDashboard, ClubHistory, ClubInvitation, createCycle, createDiscussionNote, decideJoinRequest, DiscussionNote, getClubDashboard, getClubHistory, getClubInvitations, getCycleDiscussionNotes, getDashboard, getJoinRequests, getSuggestions, inviteMember, JoinRequest, revokeInvitation, Suggestion, updateClubSettings, updateCycle, updateMemberRole } from "../lib/api";
 import { AppHeader } from "../components/AppHeader";
 
 export function ClubPage() {
@@ -121,7 +121,38 @@ function ControlDrawer({ club, role, clubId, onSaved }: { club: ClubDashboard; r
   async function promote(username: string) { if (!token) return; setBusy(true); try { await updateMemberRole(clubId, username, "admin", token); setMessage(`${username} is now an admin.`); onSaved(); } catch (err) { setMessage(err instanceof Error ? err.message : "Could not update role."); } finally { setBusy(false); } }
   async function saveCycle(event: React.FormEvent<HTMLFormElement>, future: boolean) { event.preventDefault(); if (!token) return; const values = cycleFormValues(new FormData(event.currentTarget)); setBusy(true); try { if (future) await createCycle(clubId, values, token); else if (club.active_cycle) await updateCycle(club.active_cycle.id, values, token); setMessage(future ? "Future cycle scheduled." : "Current cycle updated."); onSaved(); } catch (err) { setMessage(err instanceof Error ? err.message : "Could not save cycle."); } finally { setBusy(false); } }
   async function updateFutureCycle(event: React.FormEvent<HTMLFormElement>, cycleId: number) { event.preventDefault(); if (!token) return; setBusy(true); try { await updateCycle(cycleId, cycleFormValues(new FormData(event.currentTarget)), token); setMessage("Scheduled cycle updated."); onSaved(); } catch (err) { setMessage(err instanceof Error ? err.message : "Could not update scheduled cycle."); } finally { setBusy(false); } }
-  return <><button className="club-controls-trigger" onClick={() => setOpen(true)}>Club controls</button>{open && <div className="control-overlay" role="dialog" aria-modal="true" aria-label="Club controls"><button className="control-scrim" aria-label="Close controls" onClick={() => setOpen(false)} /><aside className="control-drawer"><button className="drawer-close" onClick={() => setOpen(false)}>×</button><p className="eyebrow">{role} controls</p><h2>Club controls</h2><section><h3>Join requests</h3>{requests.length ? requests.map((request) => <div className="request-row" key={request.id}><span>Reader #{request.user_id}</span><button disabled={busy} onClick={() => decide(request, true)}>Accept</button><button disabled={busy} onClick={() => decide(request, false)}>Reject</button></div>) : <p>No pending requests.</p>}</section>{club.active_cycle && <form className="manage-form" onSubmit={(event) => saveCycle(event, false)}><h3>Edit current cycle</h3><CycleFields defaults={club.active_cycle} /><button disabled={busy}>Save cycle</button></form>}{club.future_cycles.map((cycle) => <form className="manage-form" key={cycle.id} onSubmit={(event) => updateFutureCycle(event, cycle.id)}><h3>Edit scheduled cycle</h3><CycleFields defaults={cycle} /><button disabled={busy}>Save scheduled cycle</button></form>)}<form className="manage-form" onSubmit={(event) => saveCycle(event, true)}><h3>Schedule a future cycle</h3><CycleFields /><button disabled={busy}>Schedule cycle</button></form><ManagementPanel club={{ ...club, viewer_role: role }} clubId={clubId} onSaved={onSaved} />{message && <p className="reading-message">{message}</p>}</aside></div>}</>;
+  return <><button className="club-controls-trigger" onClick={() => setOpen(true)}>Club controls</button>{open && <div className="control-overlay" role="dialog" aria-modal="true" aria-label="Club controls"><button className="control-scrim" aria-label="Close controls" onClick={() => setOpen(false)} /><aside className="control-drawer"><button className="drawer-close" onClick={() => setOpen(false)}>×</button><p className="eyebrow">{role} controls</p><h2>Club controls</h2><section><h3>Join requests</h3>{requests.length ? requests.map((request) => <div className="request-row" key={request.id}><span>Reader #{request.user_id}</span><button disabled={busy} onClick={() => decide(request, true)}>Accept</button><button disabled={busy} onClick={() => decide(request, false)}>Reject</button></div>) : <p>No pending requests.</p>}</section><InvitePanel clubId={clubId} />{club.active_cycle && <form className="manage-form" onSubmit={(event) => saveCycle(event, false)}><h3>Edit current cycle</h3><CycleFields defaults={club.active_cycle} /><button disabled={busy}>Save cycle</button></form>}{club.future_cycles.map((cycle) => <form className="manage-form" key={cycle.id} onSubmit={(event) => updateFutureCycle(event, cycle.id)}><h3>Edit scheduled cycle</h3><CycleFields defaults={cycle} /><button disabled={busy}>Save scheduled cycle</button></form>)}<form className="manage-form" onSubmit={(event) => saveCycle(event, true)}><h3>Schedule a future cycle</h3><CycleFields /><button disabled={busy}>Schedule cycle</button></form><ManagementPanel club={{ ...club, viewer_role: role }} clubId={clubId} onSaved={onSaved} />{message && <p className="reading-message">{message}</p>}</aside></div>}</>;
+}
+
+function InvitePanel({ clubId }: { clubId: string }) {
+  const [invitations, setInvitations] = useState<ClubInvitation[]>([]);
+  const [username, setUsername] = useState("");
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const token = localStorage.getItem("tomeys_token");
+
+  const refresh = () => { if (token) getClubInvitations(clubId, token).then(setInvitations).catch(() => undefined); };
+  useEffect(refresh, [clubId]);
+
+  async function send(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!token || !username.trim()) return;
+    setBusy(true); setMessage("");
+    try {
+      await inviteMember(clubId, username.trim(), token);
+      setUsername("");
+      setMessage("Invitation sent.");
+      refresh();
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Could not send that invitation."); } finally { setBusy(false); }
+  }
+
+  async function revoke(invitationId: number) {
+    if (!token) return;
+    setBusy(true);
+    try { await revokeInvitation(invitationId, token); setMessage("Invitation revoked."); refresh(); } catch (error) { setMessage(error instanceof Error ? error.message : "Could not revoke that invitation."); } finally { setBusy(false); }
+  }
+
+  return <section><h3>Invite a reader</h3><form className="manage-form" onSubmit={send}><label>Username<input value={username} onChange={(event) => setUsername(event.target.value)} placeholder="theirhandle" /></label><button disabled={busy || !username.trim()}>Send invitation</button></form>{invitations.length > 0 && <div className="request-list"><p className="eyebrow">Awaiting a reply</p>{invitations.map((invitation) => <div className="request-row" key={invitation.id}><span>{invitation.invited_display_name || invitation.invited_username}</span><button disabled={busy} onClick={() => revoke(invitation.id)}>Revoke</button></div>)}</div>}{message && <p className="reading-message">{message}</p>}</section>;
 }
 
 function ManagementPanel({ club, clubId, onSaved }: { club: ClubDashboard; clubId: string; onSaved: () => void }) {
