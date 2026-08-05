@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import get_current_user
 from app.dependencies import get_db
 from app.exceptions.moderation_exceptions import NameNotAllowedError
+from app.exceptions.signup_exceptions import InvalidSignupCodeError
 from app.exceptions.user_exceptions import UserAlreadyExistsError
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse
@@ -20,6 +21,11 @@ def create_user(
     try:
         return register_user(db, user)
 
+    except InvalidSignupCodeError as exc:
+        raise HTTPException(
+            status_code=403,
+            detail=str(exc),
+        )
     except UserAlreadyExistsError as exc:
         raise HTTPException(
             status_code=400,
