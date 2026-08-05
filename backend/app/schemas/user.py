@@ -14,6 +14,9 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=BCRYPT_MAX_PASSWORD_BYTES)
     display_name: str | None = Field(default=None, max_length=64)
+    # Optional here so the field is absent when no code is configured; the
+    # service rejects a missing one whenever SIGNUP_CODE is set.
+    signup_code: str | None = Field(default=None, max_length=128)
 
     @field_validator("password")
     @classmethod

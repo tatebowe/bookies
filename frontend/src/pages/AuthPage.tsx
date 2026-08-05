@@ -11,12 +11,15 @@ export function AuthPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Kept in state rather than read from the form, so it can travel with a
+  // Google sign-in too: that path creates accounts as well.
+  const [signupCode, setSignupCode] = useState("");
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 
   async function googleSignIn(credential: string) {
     setError(""); setIsSubmitting(true);
     try {
-      const token = await googleLogin(credential);
+      const token = await googleLogin(credential, signupCode);
       localStorage.setItem("tomeys_token", token.access_token);
       navigate("/dashboard");
     } catch (requestError) { setError(requestError instanceof Error ? requestError.message : "Google sign-in could not be completed."); } finally { setIsSubmitting(false); }
@@ -28,7 +31,7 @@ export function AuthPage() {
     const password = String(data.get("password") || "");
     setError(""); setIsSubmitting(true);
     try {
-      if (mode === "register") await register({ username: String(data.get("username")), email: String(data.get("email")), password, display_name: String(data.get("displayName")) });
+      if (mode === "register") await register({ username: String(data.get("username")), email: String(data.get("email")), password, display_name: String(data.get("displayName")), signup_code: signupCode });
       const token = await login(mode === "register" ? String(data.get("email")) : String(data.get("identity")), password);
       localStorage.setItem("tomeys_token", token.access_token);
       navigate("/dashboard");
@@ -46,7 +49,7 @@ export function AuthPage() {
       <p className="auth-intro">{mode === "login" ? "Sign in and pick up where the last chapter left off." : "Create your reader profile and join the conversation."}</p>
       <div className="auth-tabs"><button type="button" className={mode === "login" ? "active" : ""} onClick={() => setMode("login")}>Sign in</button><button type="button" className={mode === "register" ? "active" : ""} onClick={() => setMode("register")}>Create account</button></div>
         <form className="auth-form" onSubmit={submit}>
-        {mode === "register" && <><label>Display name<input name="displayName" required placeholder="How readers know you" /></label><label>Username<input name="username" required placeholder="yourhandle" /></label><label>Email<input type="email" name="email" required placeholder="you@example.com" /></label></>}
+        {mode === "register" && <><label>Invite code<input name="signupCode" required value={signupCode} onChange={(event) => setSignupCode(event.target.value)} autoComplete="off" placeholder="Ask a Tomey for the code" /></label><label>Display name<input name="displayName" required placeholder="How readers know you" /></label><label>Username<input name="username" required placeholder="yourhandle" /></label><label>Email<input type="email" name="email" required placeholder="you@example.com" /></label></>}
         {mode === "login" && <label>Email or username<input name="identity" required autoComplete="username" placeholder="you@example.com" /></label>}
         <label>Password<input type="password" name="password" required minLength={8} autoComplete={mode === "login" ? "current-password" : "new-password"} placeholder="At least 8 characters" /></label>
         {error && <p className="form-error" role="alert">{error}</p>}

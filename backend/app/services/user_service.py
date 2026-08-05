@@ -1,6 +1,10 @@
+import secrets
+
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
+from app.exceptions.signup_exceptions import InvalidSignupCodeError
 from app.exceptions.user_exceptions import (
     UnverifiedEmailError,
     UserAlreadyExistsError,
@@ -10,6 +14,37 @@ from app.schemas.user import UserCreate
 from app.security import hash_password, verify_password
 from app.services.helpers import exists, get_by_id, save_and_refresh
 from app.services.name_moderation_service import ensure_allowed_name
+
+
+def ensure_signup_allowed(
+    signup_code: str | None,
+) -> None:
+    """
+    Gate account creation behind a shared invite code.
+
+    Every path that creates an account funnels through here, so a new one is
+    only unguarded if it also skips this check. No configured code means
+    signup is open.
+
+    Raises:
+        InvalidSignupCodeError:
+            If a code is configured and the supplied one does not match.
+    """
+
+    expected = settings.signup_code
+
+    if not expected:
+        return
+
+    # compare_digest rather than ==: the comparison is against a shared secret,
+    # and it also handles the None case without a separate branch.
+    if signup_code is None or not secrets.compare_digest(
+        signup_code,
+        expected,
+    ):
+        raise InvalidSignupCodeError(
+            "A valid signup code is required to create an account",
+        )
 
 
 def register_user(
@@ -22,7 +57,11 @@ def register_user(
     Raises:
         UserAlreadyExistsError:
             If the username or email already exists.
+        InvalidSignupCodeError:
+            If a signup code is configured and the supplied one is wrong.
     """
+
+    ensure_signup_allowed(user.signup_code)
 
     ensure_allowed_name(user.username, "username")
     if user.display_name:
@@ -195,6 +234,7 @@ def is_verified_email(google_user: dict) -> bool:
 def get_or_create_google_user(
     db: Session,
     google_user: dict,
+    signup_code: str | None = None,
 ) -> User:
     """
     Find an existing Google user or create one.
@@ -203,6 +243,10 @@ def get_or_create_google_user(
         UnverifiedEmailError:
             If Google has not verified the address. Acting on an unverified
             address would let someone claim an address they do not control.
+        InvalidSignupCodeError:
+            If creating a new account and the signup code is wrong. Existing
+            users are unaffected: the gate gets checked on creation only, so
+            it never locks out anyone who already has an account.
     """
 
     google_id = google_user["sub"]
@@ -221,6 +265,8 @@ def get_or_create_google_user(
 
     if user:
         return user
+
+    ensure_signup_allowed(signup_code)
 
     return create_google_user(
         db,

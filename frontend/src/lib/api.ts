@@ -41,11 +41,11 @@ export async function login(emailOrUsername: string, password: string) {
   return request("/auth/login", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: form });
 }
 
-export async function googleLogin(idToken: string) {
-  return request("/auth/google", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: idToken }) });
+export async function googleLogin(idToken: string, signupCode?: string) {
+  return request("/auth/google", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: idToken, signup_code: signupCode || null }) });
 }
 
-export async function register(input: { username: string; email: string; password: string; display_name: string }) {
+export async function register(input: { username: string; email: string; password: string; display_name: string; signup_code: string }) {
   return request("/users/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
 }
 
