@@ -69,6 +69,7 @@ class ClubDashboardResponse(BaseModel):
     members: list[DashboardMember]
 
     active_cycle: DashboardCycle | None = None
+    upcoming_cycle: DashboardCycle | None = None
     participation_cycle: DashboardCycle | None = None
     future_cycles: list[DashboardCycle] = []
 

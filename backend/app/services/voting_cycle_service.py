@@ -153,33 +153,42 @@ def get_active_cycle(
     Return current active cycle and update phase.
     """
 
-    cycle = (
+    now = datetime.now(timezone.utc)
+    cycles = (
         db.query(VotingCycle)
-        .filter(
-            VotingCycle.club_id == club_id,
-            VotingCycle.active.is_(True),
-        )
-        .first()
+        .filter(VotingCycle.club_id == club_id)
+        .order_by(VotingCycle.suggestion_start_date)
+        .all()
     )
 
-    if cycle is None:
-        now = datetime.now(timezone.utc)
-        cycle = (
-            db.query(VotingCycle)
-            .filter(
-                VotingCycle.club_id == club_id,
-                VotingCycle.active.is_(False),
-                VotingCycle.suggestion_start_date <= now,
-                VotingCycle.phase == "suggestion",
+    for cycle in cycles:
+        if cycle.active or ensure_utc(cycle.suggestion_start_date) <= now:
+            update_cycle_phase(db, cycle)
+
+    cycle = next(
+        (item for item in cycles if item.active and item.phase != "completed"),
+        None,
+    )
+    if cycle is not None:
+        return cycle
+
+    cycle = next(
+        (
+            item
+            for item in cycles
+            if (
+                item.phase != "completed"
+                and ensure_utc(item.suggestion_start_date) <= now
             )
-            .order_by(VotingCycle.suggestion_start_date)
-            .first()
-        )
-        if cycle is None:
-            return None
-        cycle.active = True
-        db.commit()
-        db.refresh(cycle)
+        ),
+        None,
+    )
+    if cycle is None:
+        return None
+
+    cycle.active = True
+    db.commit()
+    db.refresh(cycle)
 
     return update_cycle_phase(
         db,
