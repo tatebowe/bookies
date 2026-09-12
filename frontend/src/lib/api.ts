@@ -14,6 +14,7 @@ export type ClubDashboard = {
   reading_progress: { not_started: number; reading: number; completed: number };
   members: Array<{ username: string; display_name: string | null; role: string }>;
   active_cycle: { id: number; name: string | null; phase: string; active: boolean; suggestion_start_date: string | null; voting_start_date: string | null; voting_end_date: string | null; discussion_date: string | null; selected_book: { id: number; title: string; authors: string | null } | null } | null;
+  upcoming_cycle: { id: number; name: string | null; phase: string; active: boolean; suggestion_start_date: string | null; voting_start_date: string | null; voting_end_date: string | null; discussion_date: string | null; selected_book: { id: number; title: string; authors: string | null } | null } | null;
   participation_cycle: { id: number; name: string | null; phase: string; active: boolean; suggestion_start_date: string | null; voting_start_date: string | null; voting_end_date: string | null; discussion_date: string | null } | null;
   future_cycles: Array<{ id: number; name: string | null; phase: string; active: boolean; suggestion_start_date: string | null; voting_start_date: string | null; voting_end_date: string | null; discussion_date: string | null }>;
   discussion_notes_count: number;

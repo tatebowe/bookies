@@ -11,6 +11,7 @@ click==8.4.2
 colorama==0.4.6
 cryptography==49.0.0
 distlib==0.4.3
+dnspython==2.8.0
 ecdsa==0.19.2
 email-validator==2.3.0
 fastapi==0.139.0
@@ -25,6 +26,8 @@ idna==3.18
 iniconfig==2.3.0
 mypy_extensions==1.1.0
 nodeenv==1.10.0
+npm==0.1.1
+optional-django==0.1.0
 packaging==26.2
 passlib==1.7.4
 pathspec==1.1.1

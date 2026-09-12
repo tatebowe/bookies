@@ -93,7 +93,6 @@ body { margin: 0; min-width: 320px; }
 .dashboard-page { background: radial-gradient(ellipse at 48% 37%, rgba(223, 190, 133, .7) 0%, transparent 52%), radial-gradient(ellipse at 95% 90%, rgba(66, 29, 12, .34), transparent 49%), linear-gradient(120deg, #7d4a25 0%, #b97c41 45%, #93532a 100%); color: #1d0c05; isolation: isolate; min-height: 100svh; padding: 0 5vw 4rem; position: relative; }
 .dashboard-page::before { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E"); content: ""; inset: 0; mix-blend-mode: multiply; opacity: .14; pointer-events: none; position: absolute; z-index: -1; }
 .dashboard-page::after { display: none; }
-@keyframes wizard-pose { 0%, 49% { background-image: url("../assets/wizard-stencil.png"); } 50%, 100% { background-image: url("../assets/wizard-casting.png"); } }
 .dashboard-page > * { position: relative; z-index: 2; }
 .dashboard-header { align-items: center; border-bottom: 1px solid rgba(29, 12, 5, .28); display: flex; justify-content: space-between; padding: 1.25rem 0; }
 .brand { color: inherit; font-family: "IM Fell English", Georgia, serif; font-size: 2.5rem; line-height: 1; text-decoration: none; }
@@ -120,6 +119,7 @@ body { margin: 0; min-width: 320px; }
 .status-actions { align-items: center; display: flex; flex-wrap: wrap; gap: .35rem; }
 .status-actions span { font-family: "Special Elite", monospace; font-size: .55rem; margin-right: .2rem; text-transform: uppercase; }
 .status-actions button, .reading-writing button { background: transparent; border: 1px solid rgba(29, 12, 5, .55); color: #1d0c05; cursor: pointer; font-family: "Special Elite", monospace; font-size: .52rem; letter-spacing: .04em; padding: .35rem .45rem; text-transform: uppercase; }
+.status-actions button { font-size: .63rem; padding: .43rem .62rem; }
 .status-actions button:disabled, .reading-writing button:disabled { cursor: default; opacity: .45; }
 .reading-writing { align-items: end; display: grid; gap: .4rem; grid-template-columns: 1fr auto; margin-top: .7rem; }
 .reading-writing label { display: grid; font-family: "Special Elite", monospace; font-size: .53rem; gap: .22rem; letter-spacing: .04em; text-transform: uppercase; }
@@ -128,7 +128,6 @@ body { margin: 0; min-width: 320px; }
 .reading-message { font-size: .9rem !important; font-style: italic; margin: .45rem 0 0 !important; }
 .club-monogram { align-items: center; background: #2b1207; border-radius: 50%; color: #f6dc9f; display: flex; font-family: "IM Fell English", serif; font-size: 1.4rem; height: 2.4rem; justify-content: center; width: 2.4rem; }
 .clubs-card { overflow: visible; position: relative; }
-.clubs-card::after { background: url("../assets/wizard-seated.png") no-repeat center bottom / contain; content: ""; height: 245px; left: 61%; opacity: .2; pointer-events: none; position: absolute; top: -166px; transform: translateX(-50%); width: 235px; z-index: 3; }
 .club-link { color: inherit; font-family: "IM Fell English", Georgia, serif; font-size: 1.35rem; line-height: 1; text-decoration-color: rgba(29, 12, 5, .35); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .club-link:hover { text-decoration-color: currentColor; }
 .note-row { border-bottom: 1px dashed rgba(29, 12, 5, .25); padding: .6rem 0; }
