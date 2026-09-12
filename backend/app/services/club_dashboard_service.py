@@ -9,7 +9,10 @@ from app.models.suggestion import BookSuggestion
 from app.models.voting_cycle import VotingCycle
 from app.services.helpers import get_by_id
 from app.services.permission_service import require_club_visibility
-from app.services.voting_cycle_service import get_open_participation_cycle
+from app.services.voting_cycle_service import (
+    get_active_cycle,
+    get_open_participation_cycle,
+)
 
 
 def get_club_dashboard(
@@ -37,26 +40,31 @@ def get_club_dashboard(
         club_id,
     )
 
-    active_cycle = (
-        db.query(VotingCycle)
-        .filter(
-            VotingCycle.club_id == club_id,
-            VotingCycle.active.is_(True),
-        )
-        .first()
-    )
+    active_cycle = get_active_cycle(db, club_id)
 
     future_cycles = (
         db.query(VotingCycle)
         .filter(
             VotingCycle.club_id == club_id,
             VotingCycle.active.is_(False),
-            VotingCycle.phase == "suggestion",
+            VotingCycle.phase.in_(("suggestion", "voting")),
         )
         .order_by(VotingCycle.suggestion_start_date)
         .all()
     )
     participation_cycle = get_open_participation_cycle(db, club_id)
+
+    upcoming_cycle = (
+        db.query(VotingCycle)
+        .filter(
+            VotingCycle.club_id == club_id,
+            VotingCycle.active.is_(False),
+            VotingCycle.selected_book_id.isnot(None),
+            VotingCycle.phase == "reading",
+        )
+        .order_by(VotingCycle.discussion_date)
+        .first()
+    )
 
     current_book = None
 
@@ -98,17 +106,6 @@ def get_club_dashboard(
         )
         viewer_club_reading_id = viewer_reading.id if viewer_reading else None
 
-    progress = {
-        "not_started": 0,
-        "reading": 0,
-        "completed": 0,
-    }
-
-    members = []
-
-    for reading in readings:
-        progress[reading.status] += 1
-
     memberships = (
         db.query(ClubMembership)
         .filter(
@@ -116,6 +113,22 @@ def get_club_dashboard(
         )
         .all()
     )
+
+    progress = {
+        "not_started": 0,
+        "reading": 0,
+        "completed": 0,
+    }
+
+    for reading in readings:
+        if reading.status in {"reading", "completed"}:
+            progress[reading.status] += 1
+
+    if active_cycle and active_cycle.selected_book_id:
+        progress["not_started"] = max(
+            len(memberships) - progress["reading"] - progress["completed"],
+            0,
+        )
 
     members = []
 
@@ -153,6 +166,7 @@ def get_club_dashboard(
             if active_cycle
             else None
         ),
+        "upcoming_cycle": upcoming_cycle,
         "participation_cycle": participation_cycle,
         "future_cycles": future_cycles,
         "discussion_notes_count": discussion_count,
