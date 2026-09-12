@@ -6,6 +6,7 @@ from app.auth.google import verify_google_token
 from app.auth.jwt import create_access_token
 from app.dependencies import get_db
 from app.exceptions.moderation_exceptions import NameNotAllowedError
+from app.exceptions.signup_exceptions import InvalidSignupCodeError
 from app.exceptions.user_exceptions import UnverifiedEmailError
 from app.schemas.auth import GoogleLoginRequest, TokenResponse
 from app.services.user_service import (
@@ -78,8 +79,14 @@ def google_login(
         user = get_or_create_google_user(
             db,
             google_user,
+            payload.signup_code,
         )
     except UnverifiedEmailError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(exc),
+        )
+    except InvalidSignupCodeError as exc:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(exc),

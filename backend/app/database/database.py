@@ -4,10 +4,16 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 DATABASE_URL = settings.database_url
 
+# check_same_thread is a SQLite-only driver argument; psycopg rejects it.
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False},
+    connect_args=connect_args,
+    # Pooled connections can be closed server-side (restart, idle timeout);
+    # pre-ping discards dead ones instead of surfacing them as request errors.
+    pool_pre_ping=True,
 )
 
 

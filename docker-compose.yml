@@ -1,0 +1,44 @@
+services:
+  backend:
+    build: ./backend
+    image: bookies-backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    volumes:
+      # Talk to the host's PostgreSQL 18 over its unix socket. It listens on
+      # 127.0.0.1 only, which containers cannot reach, and this avoids exposing
+      # it on the docker bridge. Must stay writable: connect() needs it.
+      - /var/run/postgresql:/var/run/postgresql
+    # Not published to the host: only the frontend needs to reach it.
+    expose:
+      - "8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+    image: bookies-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      API_URL: http://backend:8000
+    # Loopback only — public traffic arrives through the tunnel, not this port.
+    # Use 0.0.0.0:80:80 instead if you also want direct LAN access.
+    ports:
+      - "127.0.0.1:8080:80"
+
+  # Dials out to Cloudflare; nothing inbound is opened on the router.
+  # Point the tunnel's public hostname at http://frontend:80 in the Zero Trust
+  # dashboard so /api stays same-origin (the backend has no CORS middleware).
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN in ./.env}
+    depends_on:
+      frontend:
+        condition: service_healthy

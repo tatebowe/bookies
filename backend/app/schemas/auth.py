@@ -11,3 +11,5 @@ class GoogleLoginRequest(BaseModel):
     # credential, and query strings land in access logs, proxy logs, Referer
     # headers and browser history.
     token: str
+    # Only consulted when the token belongs to someone without an account yet.
+    signup_code: str | None = None
